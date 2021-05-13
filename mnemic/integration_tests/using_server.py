@@ -20,7 +20,7 @@ async def main():
                 "uuid": identifier,
                 "row_data": [random.uniform(0, 100), random.uniform(0, 100)]
             }
-
+            print("Sending:", msg)
             client.send(msg)
 
 

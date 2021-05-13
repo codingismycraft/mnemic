@@ -45,7 +45,7 @@ async def process_message(conn_pool, payload):
     elif msg_type == 'row':
         identifier = msg.get('uuid')
         row_data = msg.get('row_data')
-        await _insert_row(conn_pool, identifier, *row_data)
+        await insert_row(conn_pool, identifier, *row_data)
 
 
 async def get_latest_trace(app_name):
@@ -81,7 +81,7 @@ async def _create_tracer(conn_pool, identifier, app_name, *column_names):
             list(column_names))
 
 
-async def _insert_row(conn_pool, uuid, *row_data):
+async def insert_row(conn_pool, uuid, *row_data):
     async with conn_pool.acquire() as conn:
         await conn.execute(_SQL_INSERT_ROW, uuid, list(row_data))
 

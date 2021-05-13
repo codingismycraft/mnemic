@@ -14,6 +14,7 @@ class CustomMsgProtocol(asyncio.BaseProtocol):
 
     def datagram_received(self, data, addr):
         message = data.decode()
+        print("processing: ", message)
         asyncio.ensure_future(
             utils.process_message(conn_pool=self._conn, payload=message)
         )
