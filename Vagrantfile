@@ -30,7 +30,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision :docker_compose
 
   config.vm.provision "shell", inline: $script
-  config.vm.provision "shell", path: "install-psql.sh"
+  config.vm.provision "shell", path: "prepare-psql.sh"
   for i in 8888..8900
     config.vm.network :forwarded_port, guest: i, host: i-2000
   end

@@ -1,4 +1,6 @@
 dropdb mnemic;
 createdb mnemic;
-psql mnemic -f create-db.sql
-sudo -u postgres bash -c "psql -c \"grant all privileges on database mnemic to vagrant;\""
+docker cp ./create-db.sql my-postgres:/
+psql mnemic -f /create-db.sql
+
+
