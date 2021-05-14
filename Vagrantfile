@@ -17,9 +17,9 @@ sudo pip3 install asyncpg
 sudo apt install python3-sklearn -y
 sudo pip3 install seaborn
 sudo pip3 install --upgrade tensorflow
-sudo echo 'alias psql="docker exec -it my-postgres psql -U postgres"' >> /home/vagrant/.bashrc
-sudo echo 'alias dropdb="docker exec -it my-postgres dropdb -U postgres"' >> /home/vagrant/.bashrc
-sudo echo 'alias createdb="docker exec -it my-postgres createdb -U postgres"' >> /home/vagrant/.bashrc
+sudo echo 'alias psql="docker exec -it my-db psql -U postgres"' >> /home/vagrant/.bashrc
+sudo echo 'alias dropdb="docker exec -it my-db dropdb -U postgres"' >> /home/vagrant/.bashrc
+sudo echo 'alias createdb="docker exec -it my-db createdb -U postgres"' >> /home/vagrant/.bashrc
 SCRIPT
 
 Vagrant.configure("2") do |config|
@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision :docker_compose
 
   config.vm.provision "shell", inline: $script
-  config.vm.provision "shell", path: "prepare-psql.sh"
+  # config.vm.provision "shell", path: "prepare-psql.sh"
 
   for i in 8888..8900
     config.vm.network :forwarded_port, guest: i, host: i-2000
