@@ -5,6 +5,7 @@ import mnemic.dbconn as dbconn
 import mnemic.utils as utils
 
 
+
 class CustomMsgProtocol(asyncio.BaseProtocol):
     _conn = None
 
