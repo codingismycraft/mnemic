@@ -2,7 +2,11 @@
 
 import json
 
-import mnemic.dbconn as dbconn
+try:
+    import backend.dbconn as dbconn
+except ModuleNotFoundError:
+    import dbconn
+
 
 DbConnection = dbconn.DbConnection
 

@@ -5,7 +5,7 @@ import os
 import uuid
 import random
 
-import mnemic.utils as utils
+import backend.utils as utils
 
 
 # Create the testing database.

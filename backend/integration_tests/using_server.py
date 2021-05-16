@@ -2,13 +2,13 @@ import asyncio
 import random
 import uuid
 
-import mnemic.trace_client as trace_client
+import backend.trace_client as trace_client
 
 
 async def main():
     identifier = str(uuid.uuid4())
 
-    ip = "localhost"
+    ip = "127.0.0.1"
     port = 9999
 
     column_names = ["col1", "col2"]

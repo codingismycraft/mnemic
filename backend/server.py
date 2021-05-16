@@ -1,8 +1,17 @@
 import asyncio
 import signal
 
-import mnemic.dbconn as dbconn
-import mnemic.utils as utils
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+try:
+    import backend.dbconn as dbconn
+    import backend.utils as utils
+except ModuleNotFoundError:
+    import dbconn as dbconn
+    import utils as utils
 
 
 
@@ -15,7 +24,7 @@ class CustomMsgProtocol(asyncio.BaseProtocol):
 
     def datagram_received(self, data, addr):
         message = data.decode()
-        print("processing: ", message)
+        logging.debug("Received msg: %s ", message)
         asyncio.ensure_future(
             utils.process_message(conn_pool=self._conn, payload=message)
         )
@@ -26,9 +35,14 @@ async def run():
     loop = asyncio.get_event_loop()
 
     # One instance of CustomMsgProtocol will be created per client.
+    # await loop.create_datagram_endpoint(
+    #     CustomMsgProtocol,
+    #     local_addr=('127.0.0.1', 9999)
+    # )
+
     await loop.create_datagram_endpoint(
         CustomMsgProtocol,
-        local_addr=('127.0.0.1', 9999)
+        local_addr=('0.0.0.0', 9999)
     )
 
     async def terminate():
@@ -43,7 +57,7 @@ async def run():
                 terminate()
             )
         )
-    print("Starting UDP server")
+    logging.info("Starting UDP server")
     async with dbconn.DbConnection() as conn:
         CustomMsgProtocol.set_db_conn(conn)
         await stop_event.wait()
