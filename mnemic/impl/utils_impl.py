@@ -2,44 +2,21 @@
 
 import json
 
-try:
-    import backend.dbconn as dbconn
-except ModuleNotFoundError:
-    import dbconn
+import mnemic.impl.constants as constants
+import mnemic.db_conn as db_conn
 
-
-DbConnection = dbconn.DbConnection
-
-_SQL_INSERT_RUN = """
-INSERT INTO tracing_run (uuid, app_name, column_names)  VALUES($1, $2, $3);
-"""
-
-_SQL_INSERT_ROW = """
-INSERT INTO tracing_row (uuid, row_data) VALUES($1, $2);
-"""
-
-_SQL_SELECT_NUMBER_OF_COLS = """
-SELECT CARDINALITY(column_names) AS col_count, uuid 
-FROM tracing_run WHERE uuid=$1
-"""
-
-_SQL_SELECT_COL_NAMES = """
-select unnest as col_name, ordinality -1 as index 
-from unnest((select column_names from tracing_run where uuid=$1)) 
-with ordinality
-"""
-
-_SQL_SELECT_LATEST_RUN = """
-select uuid from tracing_run where app_name=$1 
-order by creation_time desc limit 1
-"""
+# Aliases.
+DbConnection = db_conn.DbConnection
 
 _PREFETCH_SIZE = 100
 
 
 async def process_message(conn_pool, payload):
-    assert isinstance(payload, str)
-    msg = json.loads(payload)
+    if not isinstance(payload, dict):
+        assert isinstance(payload, str)
+        msg = json.loads(payload)
+    else:
+        msg = payload
     msg_type = msg.get('msg_type')
     if msg_type == "create_trace_run":
         identifier = msg.get('uuid')
@@ -55,7 +32,7 @@ async def process_message(conn_pool, payload):
 async def get_latest_trace(app_name):
     async with DbConnection() as conn_pool:
         async with conn_pool.acquire() as conn:
-            stmt = await conn.prepare(_SQL_SELECT_LATEST_RUN)
+            stmt = await conn.prepare(constants.SQL_SELECT_LATEST_RUN)
             async with conn.transaction():
                 async for record in stmt.cursor(app_name,
                                                 prefetch=_PREFETCH_SIZE):
@@ -79,7 +56,7 @@ async def _create_tracer(conn_pool, identifier, app_name, *column_names):
     """
     async with conn_pool.acquire() as conn:
         await conn.execute(
-            _SQL_INSERT_RUN,
+            constants.SQL_INSERT_RUN,
             identifier,
             app_name,
             list(column_names))
@@ -87,7 +64,7 @@ async def _create_tracer(conn_pool, identifier, app_name, *column_names):
 
 async def insert_row(conn_pool, uuid, *row_data):
     async with conn_pool.acquire() as conn:
-        await conn.execute(_SQL_INSERT_ROW, uuid, list(row_data))
+        await conn.execute(constants.SQL_INSERT_ROW, uuid, list(row_data))
 
 
 async def _get_trace(uuid, conn_pool):
@@ -95,7 +72,7 @@ async def _get_trace(uuid, conn_pool):
     assert conn_pool
     col_names = []
     async with conn_pool.acquire() as conn:
-        stmt = await conn.prepare(_SQL_SELECT_COL_NAMES)
+        stmt = await conn.prepare(constants.SQL_SELECT_COL_NAMES)
         async with conn.transaction():
             async for record in stmt.cursor(uuid, prefetch=_PREFETCH_SIZE):
                 col_names.append(record['col_name'])
