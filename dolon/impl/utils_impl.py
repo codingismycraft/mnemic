@@ -2,14 +2,15 @@
 
 import json
 
-import mnemic.impl.constants as constants
-import mnemic.db_conn as db_conn
+import dolon.impl.constants as constants
+import dolon.db_conn as db_conn
 
 # Aliases.
 DbConnection = db_conn.DbConnection
 
 _PREFETCH_SIZE = 100
 
+import logging
 
 async def process_message(conn_pool, payload):
     if not isinstance(payload, dict):
@@ -17,6 +18,7 @@ async def process_message(conn_pool, payload):
         msg = json.loads(payload)
     else:
         msg = payload
+    #logging.info(str(payload)) # Will cause missed messages.
     msg_type = msg.get('msg_type')
     if msg_type == "create_trace_run":
         identifier = msg.get('uuid')

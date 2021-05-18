@@ -1,9 +1,9 @@
 FROM python:latest
 WORKDIR /backend
 RUN pip3 install asyncpg
-COPY constants.py constants.py
-COPY dbconn.py dbconn.py
+RUN pip3 install dolon==0.0.16
 COPY server.py server.py
-COPY utils.py utils.py
-ENV PYTHONPATH "${PYTHONPATH}:."
+ENV POSTGRES_PASSWORD "postgres123"
+ENV POSTGRES_USER "postgres"
+ENV POSTGRES_DB "mnemic"
 CMD ["python", "server.py"]

@@ -1,18 +1,14 @@
+"""The listening UDP server for tracing messages."""
+
 import asyncio
 import signal
 
 import logging
 
+import dolon.utils as utils
+import dolon.db_conn as db_conn
+
 logging.basicConfig(level=logging.DEBUG)
-
-
-try:
-    import backend.dbconn as dbconn
-    import backend.utils as utils
-except ModuleNotFoundError:
-    import dbconn as dbconn
-    import utils as utils
-
 
 
 class CustomMsgProtocol(asyncio.BaseProtocol):
@@ -24,7 +20,6 @@ class CustomMsgProtocol(asyncio.BaseProtocol):
 
     def datagram_received(self, data, addr):
         message = data.decode()
-        logging.debug("Received msg: %s ", message)
         asyncio.ensure_future(
             utils.process_message(conn_pool=self._conn, payload=message)
         )
@@ -33,13 +28,6 @@ class CustomMsgProtocol(asyncio.BaseProtocol):
 async def run():
     stop_event = asyncio.Event()
     loop = asyncio.get_event_loop()
-
-    # One instance of CustomMsgProtocol will be created per client.
-    # await loop.create_datagram_endpoint(
-    #     CustomMsgProtocol,
-    #     local_addr=('127.0.0.1', 9999)
-    # )
-
     await loop.create_datagram_endpoint(
         CustomMsgProtocol,
         local_addr=('0.0.0.0', 9999)
@@ -58,7 +46,7 @@ async def run():
             )
         )
     logging.info("Starting UDP server")
-    async with dbconn.DbConnection() as conn:
+    async with db_conn.DbConnection() as conn:
         CustomMsgProtocol.set_db_conn(conn)
         await stop_event.wait()
 

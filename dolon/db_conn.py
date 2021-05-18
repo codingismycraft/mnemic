@@ -1,6 +1,6 @@
 """Wraps db connection pool within a context manager."""
 
-import mnemic.impl.db_conn_impl as db_conn_impl
+import dolon.impl.db_conn_impl as db_conn_impl
 
 
 class DbConnection:

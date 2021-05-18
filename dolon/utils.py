@@ -1,7 +1,7 @@
 """Exposes the basic interface to interact with the serialization means."""
 
 
-import mnemic.impl.utils_impl as utils_impl
+import dolon.impl.utils_impl as utils_impl
 
 
 async def process_message(conn_pool, payload):

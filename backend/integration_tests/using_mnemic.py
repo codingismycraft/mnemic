@@ -5,30 +5,38 @@ import os
 import uuid
 import random
 
-import backend.utils as utils
+import dolon.utils as utils
+import dolon.db_conn as db_conn
 
 
-# Create the testing database.
-# dir_path = os.path.dirname(os.path.realpath(__file__))
-# dir_path = os.path.join(dir_path, '..', 'db')
-# os.system(f"cd {dir_path};./create-db.sh {DB_NAME}; cd ~")
-
-
-async def create_rows(conn_pool, identifier):
-    for _ in range(2000):
-        await utils.insert_row(
-            conn_pool,
-            identifier,
-            random.uniform(0, 100),
-            random.uniform(0, 100)
-        )
-
+os.environ["POSTGRES_PASSWORD"] = "postgres123"
+os.environ["POSTGRES_USER"] = "postgres"
+os.environ["POSTGRES_DB"] = "mnemic"
+os.environ["HOST"] = "127.0.0.1"
 
 async def main():
-    async with utils.DbConnection() as conn_pool:
+    async with db_conn.DbConnection() as conn_pool:
         identifier = str(uuid.uuid4())
-        await utils._create_tracer(conn_pool, identifier, "junk", "v1", 'v2')
-        await create_rows(conn_pool, identifier)
+        app_name = 'junk'
+
+        msg = {
+            "msg_type": "create_trace_run",
+            "app_name": app_name,
+            "uuid": identifier,
+            "column_names": ["v1", 'v2']
+        }
+
+        await utils.process_message(conn_pool, msg)
+
+        for _ in range(20):
+            msg = {
+                "msg_type": "row",
+                "uuid": identifier,
+                "row_data": [random.uniform(0, 100), random.uniform(0, 100)]
+            }
+
+            await utils.process_message(conn_pool, msg)
+
         print(await utils.get_latest_trace('junk'))
 
 

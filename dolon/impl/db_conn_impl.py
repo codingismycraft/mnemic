@@ -4,6 +4,10 @@ import os
 
 import asyncpg
 
+# Applicable when env variable HOST not set; points to host machine
+# when the application lives within a docker container.
+_DEFAULT_HOST = "172.17.0.1"
+
 
 class DbConnectionImpl:
     """Wraps db connection pool within a context manager."""
@@ -20,7 +24,7 @@ class DbConnectionImpl:
         user = os.environ["POSTGRES_USER"]
         password = os.environ["POSTGRES_PASSWORD"]
         db = os.environ["POSTGRES_DB"]
-        host = os.environ["HOST"]
+        host = os.environ.get("HOST", _DEFAULT_HOST)
 
         return f'postgresql://{user}:{password}@{host}:5432/{db}'
 
