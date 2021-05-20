@@ -1,30 +1,23 @@
-import asyncio
-import random
-import uuid
+"""Sample of using server to create a trace."""
 
-import dolon.trace_client as trace_client
+import asyncio
+
+import dolon.trace_client as tc
+
+
+_CONN_STR =  f'postgresql://postgres:postgres123@127.0.0.1:5432/mnemic'
 
 
 async def main():
-    identifier = str(uuid.uuid4())
-
-    ip = "127.0.0.1"
-    port = 9999
-
-    column_names = ["col1", "col2"]
-    counter = 0
-    async with trace_client.TraceClient("another junk", identifier, ip, port,
-                                        *column_names) as client:
-        for _ in range(1000):
-            msg = {
-                "msg_type": "row",
-                "uuid": identifier,
-                "row_data": [random.uniform(0, 100), random.uniform(0, 100)]
-            }
-            print("Sending:", msg)
-            client.send(msg)
-            counter += 1
-    print(f"Send {counter} messages.")
+    host = "127.0.0.1"
+    port = 12012
+    async with tc.MemoryDiagnostics() as mem_diag, tc.PostgresDiagnostics(conn_str=_CONN_STR) as db_diag:
+        await tc.start_tracer(
+            "Jane", 1, host, port,
+            mem_diag.mem_allocation,
+            tc.active_tasks,
+            db_diag.live_msgs
+        )
 
 
 if __name__ == '__main__':

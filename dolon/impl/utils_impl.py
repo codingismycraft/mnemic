@@ -12,7 +12,7 @@ _PREFETCH_SIZE = 100
 
 import logging
 
-async def process_message(conn_pool, payload):
+async def process_message(db, payload):
     if not isinstance(payload, dict):
         assert isinstance(payload, str)
         msg = json.loads(payload)
@@ -24,38 +24,40 @@ async def process_message(conn_pool, payload):
         identifier = msg.get('uuid')
         app_name = msg.get('app_name')
         column_names = list(msg.get('column_names'))
-        await _create_tracer(conn_pool, identifier, app_name, *column_names)
+        await _create_tracer(db, identifier, app_name, *column_names)
     elif msg_type == 'row':
         identifier = msg.get('uuid')
         row_data = msg.get('row_data')
-        await insert_row(conn_pool, identifier, *row_data)
+        await insert_row(db, identifier, *row_data)
 
 
 async def get_latest_trace(app_name):
-    async with DbConnection() as conn_pool:
+    async with DbConnection() as db:
+        conn_pool = db.get_conn_pool()
         async with conn_pool.acquire() as conn:
             stmt = await conn.prepare(constants.SQL_SELECT_LATEST_RUN)
             async with conn.transaction():
                 async for record in stmt.cursor(app_name,
                                                 prefetch=_PREFETCH_SIZE):
                     uuid = record['uuid']
-        return await get_trace(uuid, conn_pool)
+        return await get_trace(uuid, db)
 
 
-async def get_trace(uuid, conn_pool=None):
-    if not conn_pool:
-        async with DbConnection() as conn_pool:
-            return await _get_trace(uuid, conn_pool)
+async def get_trace(uuid, db=None):
+    if not db:
+        async with DbConnection() as db:
+            return await _get_trace(uuid, db)
     else:
-        return await _get_trace(uuid, conn_pool)
+        return await _get_trace(uuid, db)
 
 
-async def _create_tracer(conn_pool, identifier, app_name, *column_names):
+async def _create_tracer(db, identifier, app_name, *column_names):
     """Creates a new run.
 
     :param str uuid: The uuid of the run expressed as string.
     :param str app_name: The application that is been traced.
     """
+    conn_pool = db.get_conn_pool()
     async with conn_pool.acquire() as conn:
         await conn.execute(
             constants.SQL_INSERT_RUN,
@@ -64,12 +66,14 @@ async def _create_tracer(conn_pool, identifier, app_name, *column_names):
             list(column_names))
 
 
-async def insert_row(conn_pool, uuid, *row_data):
+async def insert_row(db, uuid, *row_data):
+    conn_pool = db.get_conn_pool()
     async with conn_pool.acquire() as conn:
         await conn.execute(constants.SQL_INSERT_ROW, uuid, list(row_data))
 
 
-async def _get_trace(uuid, conn_pool):
+async def _get_trace(uuid, db):
+    conn_pool = db.get_conn_pool()
     assert uuid
     assert conn_pool
     col_names = []

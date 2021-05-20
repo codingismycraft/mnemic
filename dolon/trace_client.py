@@ -1,35 +1,81 @@
-import socket
-import json
+"""The trace client to record diagnostics."""
+
+import asyncio
+import tracemalloc
+
+import dolon.impl.db_conn_impl as db_conn_impl
+import dolon.impl.db_stats as db_stats
+import dolon.impl.trace_client_impl as trace_client_impl
 
 
-class TraceClient:
-    def __init__(self, app_name, uuid, ip, port, *columns):
-        self._app_name = app_name
-        self._uuid = uuid
-        self._columns = list(columns)
-        self._ip = ip
-        self._port = port
-        self._socket = None
+async def start_tracer(app_name, frequency, host, port, *diagnostics):
+    """Starts a tracer.
 
-    def send(self, data):
-        assert self._socket
-        assert isinstance(data, dict)
-        txt = json.dumps(data)
-        self._socket.sendto(txt.encode('utf-8'), (self._ip, self._port))
+    Any exception that will be caught will stop the application.
+
+    :param str app_name: The application name that will tag the trace.
+    :param int frequency: The sleep interval between consecutive traces.
+    :param int port: The port to listen for messages.
+    :param diagnostics: The diagnostic functions to record.
+    """
+    try:
+        tc = trace_client_impl.TraceClientImpl(
+            app_name,
+            host,
+            port,
+            *diagnostics
+        )
+        async with tc:
+            await tc.run(frequency)
+    except Exception as ex:
+        print(ex)
+        exit(-1)
+
+
+class PostgresDiagnostics(db_conn_impl.DbConnectionImpl):
+    """Wraps memory diagnostics within an async context manager.
+
+    :ivar str conn_str: The connection string to the database.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    async def live_msgs(self):
+        """Returns the number of live messages in db."""
+        return await db_stats.live_msgs_in_db.get_value(self)
+
+    async def dead_msgs(self):
+        """Returns the number of dead messages in db."""
+        return await db_stats.dead_msgs_in_db.get_value(self)
+
+    async def idle(self):
+        """Returns the number of idle sessions in db."""
+        return await db_stats.idle_in_db.get_value(self)
+
+    async def dn_conn(self):
+        """Returns the number of connections in db."""
+        return await db_stats.conn_count_in_db.get_value(self)
+
+
+class MemoryDiagnostics:
+    """Wraps memory diagnostics within an async context manager."""
 
     async def __aenter__(self):
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-        msg = {
-            "msg_type": "create_trace_run",
-            "app_name": self._app_name,
-            "uuid": self._uuid,
-            "column_names": self._columns
-        }
-        self.send(msg)
+        """Enters the context."""
+        tracemalloc.start()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self._socket:
-            self._socket.close()
-            self._socket = None
+        """Exits from the context."""
+        tracemalloc.stop()
 
+    async def mem_allocation(self):
+        """Returns the size of the allocated memory in Mb."""
+        current, peak = tracemalloc.get_traced_memory()
+        return current / 10 ** 6
+
+
+async def active_tasks():
+    """Returns the number of active tasks."""
+    return len([task for task in asyncio.Task.all_tasks() if not task.done()])

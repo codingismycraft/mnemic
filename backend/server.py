@@ -12,16 +12,16 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 class CustomMsgProtocol(asyncio.BaseProtocol):
-    _conn = None
+    _db = None
 
     @classmethod
-    def set_db_conn(cls, conn):
-        cls._conn = conn
+    def set_db(cls, db):
+        cls._db = db
 
     def datagram_received(self, data, addr):
         message = data.decode()
         asyncio.ensure_future(
-            utils.process_message(conn_pool=self._conn, payload=message)
+            utils.process_message(db=self._db, payload=message)
         )
 
 
@@ -30,7 +30,7 @@ async def run():
     loop = asyncio.get_event_loop()
     await loop.create_datagram_endpoint(
         CustomMsgProtocol,
-        local_addr=('0.0.0.0', 9999)
+        local_addr=('0.0.0.0', 12012)
     )
 
     async def terminate():
@@ -46,8 +46,8 @@ async def run():
             )
         )
     logging.info("Starting UDP server")
-    async with db_conn.DbConnection() as conn:
-        CustomMsgProtocol.set_db_conn(conn)
+    async with db_conn.DbConnection() as db:
+        CustomMsgProtocol.set_db(db)
         await stop_event.wait()
 
 
