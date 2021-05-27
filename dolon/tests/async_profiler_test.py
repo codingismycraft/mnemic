@@ -19,8 +19,12 @@ async def main():
     for name in profiler.get_profiling_callables():
         print(name)
         print(f'hits: {profiler.get_hits(name)}')
-        print(f'avgdur: {profiler.get_average_time(name)}')
-        print(f'inst: {profiler.get_running_instances(name)}')
+        print(f'avg-duration: {profiler.get_average_time(name)}')
+        print(f'active: {profiler.get_active_instances(name)}')
+
+    for profilying_foo in profiler.get_profiling_functions(True):
+        print(profilying_foo.__name__, await profilying_foo())
+
 
 
 if __name__ == '__main__':

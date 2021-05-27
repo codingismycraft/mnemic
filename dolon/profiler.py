@@ -34,6 +34,56 @@ def get_profiling_callables():
     return _ProfilingStatCollection.get_profiling_callable_names()
 
 
+def get_profiling_functions(use_async=False):
+    """Returns all the available profiling functions.
+
+    :param bool use_async: If true the returned functions will be async.
+
+    :return: A list of async functions one for each function to be profiled.
+    :rtype: list
+    """
+
+    def make_func(profiling_callable_name, profile_func, tag):
+        """Dynamically creates a profiling function.
+
+        :param str profiling_callable_name:
+        :param callable profile_func:
+        :param str tag: The "tag" to use for the name of the returned function.
+
+        :return: A profiled callable customized for the passed in parameters.
+        :rtype: callable
+        """
+
+        if use_async:
+            async def _inner():
+                """The function that will be returned.
+
+                :return: A profiling callable.
+                :rtype: callable
+                """
+                return profile_func(profiling_callable_name)
+        else:
+            def _inner():
+                """The function that will be returned.
+
+                :return: A profiling callable.
+                :rtype: callable
+                """
+                return profile_func(profiling_callable_name)
+
+        _inner.__qualname__ = f'{profiling_callable_name}_{tag}'
+        _inner.__name__ = f'{profiling_callable_name}_{tag}'
+
+        return _inner
+
+    func = []
+    for name in _ProfilingStatCollection.get_profiling_callable_names():
+        func.append(make_func(
+            profiling_callable_name=name, profile_func=get_hits, tag='hits')
+        )
+    return func
+
+
 def get_hits(callable_name):
     """Returns the number of hits for the passed-in callable name.
 
@@ -45,7 +95,7 @@ def get_hits(callable_name):
     return _ProfilingStatCollection.get_stats_for_callable(callable_name).hits
 
 
-def get_running_instances(callable_name):
+def get_active_instances(callable_name):
     """Returns the number of running_instances for the passed-in callable name.
 
     :param str callable_name: The name of the callable.
@@ -163,7 +213,6 @@ class _ProfilingStatCollection:
         """
         self._func_name = func.__qualname__
         self._uuid = None
-
 
     def __enter__(self):
         """Called when the callable starts."""
