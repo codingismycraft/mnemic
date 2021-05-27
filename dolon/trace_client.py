@@ -1,7 +1,10 @@
 """The trace client to record diagnostics."""
 
 import asyncio
+import os
 import tracemalloc
+
+import psutil
 
 import dolon.impl.db_conn_impl as db_conn_impl
 import dolon.impl.db_stats as db_stats
@@ -79,3 +82,20 @@ class MemoryDiagnostics:
 async def active_tasks():
     """Returns the number of active tasks."""
     return len([task for task in asyncio.Task.all_tasks() if not task.done()])
+
+
+async def cpu_percent():
+    """Returns the CPU usage."""
+    return psutil.cpu_percent()
+
+
+async def virtual_memory_percent():
+    """Returns the virtual memory percentage usage."""
+    return psutil.virtual_memory().percent
+
+
+async def memory_use():
+    """Returns the virtual memory percentage usage."""
+    pid = os.getpid()
+    py = psutil.Process(pid)
+    return py.memory_info()[0] / 2. ** 30

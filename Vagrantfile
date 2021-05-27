@@ -17,6 +17,8 @@ sudo pip3 install asyncpg
 sudo apt install python3-sklearn -y
 sudo pip3 install seaborn
 sudo pip3 install --upgrade tensorflow
+sudo pip3 install aiohttp
+sudo pip3 install ipywidgets
 sudo echo 'alias psql="docker exec -it my-db psql -U postgres"' >> /home/vagrant/.bashrc
 sudo echo 'alias dropdb="docker exec -it my-db dropdb -U postgres"' >> /home/vagrant/.bashrc
 sudo echo 'alias createdb="docker exec -it my-db createdb -U postgres"' >> /home/vagrant/.bashrc
