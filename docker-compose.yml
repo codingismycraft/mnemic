@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  database:
+    build: ./db
+    ports:
+      - 5432:5432
+    image: jpazarzis/mnemic-db
+  backend:
+    build: ./backend
+    ports:
+      - "9999:9999/udp"
+    depends_on:
+      - database
+    environment:
+      - HOST=database
+    image: jpazarzis/mnemic-backend

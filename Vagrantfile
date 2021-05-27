@@ -17,6 +17,8 @@ sudo pip3 install asyncpg
 sudo apt install python3-sklearn -y
 sudo pip3 install seaborn
 sudo pip3 install --upgrade tensorflow
+sudo pip3 install aiohttp
+sudo pip3 install ipywidgets
 sudo echo 'alias psql="docker exec -it my-db psql -U postgres"' >> /home/vagrant/.bashrc
 sudo echo 'alias dropdb="docker exec -it my-db dropdb -U postgres"' >> /home/vagrant/.bashrc
 sudo echo 'alias createdb="docker exec -it my-db createdb -U postgres"' >> /home/vagrant/.bashrc
@@ -33,13 +35,16 @@ Vagrant.configure("2") do |config|
   config.vm.provision :docker_compose
 
   config.vm.provision "shell", inline: $script
-  # config.vm.provision "shell", path: "prepare-psql.sh"
 
-  for i in 8888..8900
-    config.vm.network :forwarded_port, guest: i, host: i-2000
-  end
+     for i in 8888..8900
+        config.vm.network :forwarded_port, guest: i, host: i-2000
+     end
+
+  config.vm.network "forwarded_port", guest: 12012, host: 12012, protocol: "udp"
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = "2000"
-    vb.name = "mnemonic"
+      vb.memory = "2000"
+      vb.name = "mnemic"
   end
+
 end
+
