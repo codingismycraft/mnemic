@@ -12,6 +12,7 @@ def profiler(foo):
 
     :param callable foo: The callable (sync or async) to profile.
     """
+    _ProfilingStatCollection.register_profiling_function(foo)
     if inspect.iscoroutinefunction(foo):
         @functools.wraps(foo)
         async def _inner(*args, **kwargs):
@@ -80,6 +81,13 @@ def get_profiling_functions(use_async=False):
     for name in _ProfilingStatCollection.get_profiling_callable_names():
         func.append(make_func(
             profiling_callable_name=name, profile_func=get_hits, tag='hits')
+        )
+        func.append(make_func(
+            profiling_callable_name=name, profile_func=get_active_instances, tag='active_instances')
+        )
+        func.append(make_func(
+            profiling_callable_name=name, profile_func=get_average_time,
+            tag='average_time')
         )
     return func
 
@@ -204,7 +212,12 @@ class _ProfilingStatCollection:
     :ivar str _func_name: The callable's name to profile.
     """
 
-    _stats = collections.defaultdict(_ProfilingStats)
+    #_stats = collections.defaultdict(_ProfilingStats)
+    _stats = {}
+
+    @classmethod
+    def register_profiling_function(cls, func):
+        cls._stats[func.__qualname__] = _ProfilingStats()
 
     def __init__(self, func):
         """Initializer.
