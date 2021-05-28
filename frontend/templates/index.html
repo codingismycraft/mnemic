@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<div id="container">
+    <div id="top">Mnemic</div>
+    <div id="left">
+
+        <h2>Tracers</h2>
+
+        <p>Click on the arrow(s) to open or close the tree branches.</p>
+
+        <ul id="myUL">
+            <li><span class="tracer_name">Beverages</span>
+                <ul class="nested">
+                    <li class="tracer_run">Water</li>
+                    <li class="tracer_run">Coffee</li>
+                </ul>
+            </li>
+            <li><span class="tracer_name">Beverages</span>
+                <ul class="nested">
+                    <li class="tracer_run">Black Tea</li>
+                    <li class="tracer_run">White Tea</li>
+                </ul>
+            </li>
+            <li><span class="tracer_name">Beverages</span>
+                <ul class="nested">
+                    <li class="tracer_run">Black Tea</li>
+                    <li class="tracer_run">White Tea</li>
+                </ul>
+            </li>
+
+        </ul>
+
+        <script>
+            var toggler = document.getElementsByClassName("tracer_name");
+            var i;
+
+            for (i = 0; i < toggler.length; i++) {
+                toggler[i].addEventListener("click", function () {
+                    this.parentElement.querySelector(".nested").classList.toggle("active");
+                    this.classList.toggle("tracer_name-down");
+                });
+            }
+
+            toggler = document.getElementsByClassName("tracer_run");
+
+            for (i = 0; i < toggler.length; i++) {
+                toggler[i].addEventListener("click", function () {
+                    // this.parentElement.querySelector(".nested").classList.toggle("active");
+                    // this.classList.toggle("tracer_name-down");
+                    alert('here')
+                });
+            }
+
+        </script>
+
+    </div>
+    <div id="right"></div>
+</div>
+
+{% endblock %}
+{% block javascript %}
+{% endblock %}
