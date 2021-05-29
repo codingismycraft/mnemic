@@ -14,10 +14,16 @@ async def foo():
     await asyncio.sleep(random.uniform(0.1, 3))
 
 
+@profiler.profiler
+async def goo():
+    await asyncio.sleep(random.uniform(0.1, 3))
+
+
 async def backend_process():
     while True:
         asyncio.ensure_future(foo())
-        await asyncio.sleep(0.6)
+        asyncio.ensure_future(goo())
+        await asyncio.sleep(0.1)
 
 
 async def main():
@@ -27,11 +33,9 @@ async def main():
     async with tc.MemoryDiagnostics() as mem_diag, tc.PostgresDiagnostics(
             conn_str=_CONN_STR) as db_diag:
         await tc.start_tracer(
-            "wow1", 1, host, port,
+            "func-profiler", 1, host, port,
             mem_diag.mem_allocation,
-            tc.active_tasks,
-            db_diag.live_msgs,
-            *profiler.get_profiling_functions(True)
+            tc.active_tasks
         )
 
 

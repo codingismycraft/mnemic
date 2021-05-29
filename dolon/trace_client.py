@@ -6,9 +6,11 @@ import tracemalloc
 
 import psutil
 
+import dolon.profiler as profiler
 import dolon.impl.db_conn_impl as db_conn_impl
 import dolon.impl.db_stats as db_stats
 import dolon.impl.trace_client_impl as trace_client_impl
+
 
 
 async def start_tracer(app_name, frequency, host, port, *diagnostics):
@@ -16,11 +18,15 @@ async def start_tracer(app_name, frequency, host, port, *diagnostics):
 
     Any exception that will be caught will stop the application.
 
+    Note that all the profile-able functions will be added to diagnostics
+    automatically.
+
     :param str app_name: The application name that will tag the trace.
     :param int frequency: The sleep interval between consecutive traces.
     :param int port: The port to listen for messages.
     :param diagnostics: The diagnostic functions to record.
     """
+    diagnostics = list(diagnostics) + profiler.get_profiling_functions(True)
     try:
         tc = trace_client_impl.TraceClientImpl(
             app_name,

@@ -1,6 +1,5 @@
 """Implements the function profiler."""
 
-import collections
 import datetime
 import functools
 import inspect
@@ -26,21 +25,15 @@ def profiler(foo):
     return _inner
 
 
-def get_profiling_callables():
-    """Returns a list with the names of all callables that are profiled.
-
-    :returns: A list with the names of all callables that are profiled.
-    :rtype: list[str]
-    """
-    return _ProfilingStatCollection.get_profiling_callable_names()
-
-
 def get_profiling_functions(use_async=False):
     """Returns all the available profiling functions.
 
     :param bool use_async: If true the returned functions will be async.
 
-    :return: A list of async functions one for each function to be profiled.
+    :return: A list of sync/ async async functions one for each function to
+        be profiled.  Used by trace client to wire the profile-able functions
+        to tracing.
+
     :rtype: list
     """
 
@@ -80,19 +73,20 @@ def get_profiling_functions(use_async=False):
     func = []
     for name in _ProfilingStatCollection.get_profiling_callable_names():
         func.append(make_func(
-            profiling_callable_name=name, profile_func=get_hits, tag='hits')
+            profiling_callable_name=name, profile_func=_get_hits, tag='hits')
         )
         func.append(make_func(
-            profiling_callable_name=name, profile_func=get_active_instances, tag='active_instances')
+            profiling_callable_name=name, profile_func=_get_active_instances,
+            tag='active_instances')
         )
         func.append(make_func(
-            profiling_callable_name=name, profile_func=get_average_time,
+            profiling_callable_name=name, profile_func=_get_average_time,
             tag='average_time')
         )
     return func
 
 
-def get_hits(callable_name):
+def _get_hits(callable_name):
     """Returns the number of hits for the passed-in callable name.
 
     :param str callable_name: The name of the callable.
@@ -103,7 +97,7 @@ def get_hits(callable_name):
     return _ProfilingStatCollection.get_stats_for_callable(callable_name).hits
 
 
-def get_active_instances(callable_name):
+def _get_active_instances(callable_name):
     """Returns the number of running_instances for the passed-in callable name.
 
     :param str callable_name: The name of the callable.
@@ -115,7 +109,7 @@ def get_active_instances(callable_name):
         callable_name).running_instances
 
 
-def get_average_time(callable_name):
+def _get_average_time(callable_name):
     """Returns the average_time in seconds for the passed-in callable name.
 
     :param str callable_name: The name of the callable.
@@ -212,7 +206,7 @@ class _ProfilingStatCollection:
     :ivar str _func_name: The callable's name to profile.
     """
 
-    #_stats = collections.defaultdict(_ProfilingStats)
+    # _stats = collections.defaultdict(_ProfilingStats)
     _stats = {}
 
     @classmethod

@@ -1,6 +1,9 @@
 """Exposes the basic interface to interact with the serialization means."""
 
+import io
 import json
+
+import pandas as pd
 
 import dolon.impl.constants as constants
 import dolon.db_conn as db_conn
@@ -12,13 +15,14 @@ _PREFETCH_SIZE = 100
 
 import logging
 
+
 async def process_message(db, payload):
     if not isinstance(payload, dict):
         assert isinstance(payload, str)
         msg = json.loads(payload)
     else:
         msg = payload
-    #logging.info(str(payload)) # Will cause missed messages.
+    # logging.info(str(payload)) # Will cause missed messages.
     msg_type = msg.get('msg_type')
     if msg_type == "create_trace_run":
         identifier = msg.get('uuid')
@@ -97,3 +101,24 @@ async def _get_trace(uuid, db):
                 values = [str(v) for v in list(dict(record).values())]
                 lines.append(','.join(values))
         return '\n'.join(lines)
+
+
+async def get_trace_as_json(uuid):
+    data = await get_trace(uuid)
+    lines = data.split('\n')
+    field_names = lines[0].split(',')
+    columns = [list() for _ in range(len(field_names))]
+
+    for line in lines[1:-1]:
+        fields = line.split(',')
+        for index, value in enumerate(fields):
+            try:
+                columns[index].append(float(value))
+            except ValueError:
+                columns[index].append(value)
+
+    trace_as_json = {}
+    for field_name, values in zip(field_names, columns):
+        trace_as_json[field_name] = values
+
+    return trace_as_json

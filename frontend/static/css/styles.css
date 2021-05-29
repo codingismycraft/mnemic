@@ -24,7 +24,7 @@
     left: 350px;
     right: 0;
     bottom: 0px;
-    background: #ff7e00
+    background: whitesmoke;
 }
 
 ul, #myUL {
@@ -84,4 +84,12 @@ ul, #myUL {
 
 .active {
   display: block;
+}
+
+.line_graph {
+    width: 900px;
+    height: 500px;
+    margin: 10px;
+    background-color: #00b7f0;
+
 }

@@ -1,7 +1,14 @@
 import os
+import uuid
 
 import jinja2
+import pandas as pd
+
 from aiohttp import web
+from io import StringIO
+import matplotlib.pyplot as plt
+
+import dolon.utils as utils
 
 # root = os.path.dirname(os.path.abspath(__file__))
 # templates_dir = os.path.join(root, 'templates')
@@ -13,47 +20,66 @@ env = jinja2.Environment(
     autoescape=jinja2.select_autoescape(['html', 'xml'])
 )
 
-def load_static_content(filepath):
-    """Loads static content from the "/static/" directory.
+os.environ["POSTGRES_PASSWORD"] = "postgres123"
+os.environ["POSTGRES_USER"] = "postgres"
+os.environ["POSTGRES_DB"] = "mnemic"
+os.environ["HOST"] = "127.0.0.1"
 
-    :param str filepath: The filepath of the doc to load, relative to the
-    static/ directory.
-    :returns: The document for the passed-in filepath.
-    :rtype: string.
-    """
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    absolute_filepath = os.path.join(
-        dir_path,
-        'static/',
-        filepath)
-    with open(absolute_filepath) as f:
-        return f.read()
+dir_path = os.path.dirname(os.path.realpath(__file__))
+IMAGES_DIR = os.path.join(dir_path, 'static', 'images')
 
+PATH_TO_STATIC = os.path.join(dir_path, 'static')
 
 
 class Handler:
 
-    async def static_handler(self, request):
+    async def tracers_handler(self, request):
+        data = await utils.get_all_tracers()
+        return web.json_response(data)
 
-        directory = request.match_info['directory']
-        filename = request.match_info['filename']
-        relative_filepath = os.path.join(
-            directory,
-            filename,
+    async def tracer_run_handler(self, request):
+        uuid_for_run = request.rel_url.query['uuid']
+        data = await utils.get_trace(uuid_for_run)
+        df = pd.read_csv(StringIO(data))
+        margin_factor = 0.1
+        images = []
+        image_prefix = str(uuid.uuid4())
+        fig_index = 0
+        for column_name in df.columns:
+            if column_name == 'time':
+                continue
+            min_value = min(df[column_name])
+            max_value = max(df[column_name])
+            df.plot.line(x="time", y=column_name, rot=0, grid=True,
+                         figsize=(12, 3), title=column_name)
+            if max_value > min_value:
+                height = max_value - min_value
+                plt.ylim([min_value - height * margin_factor,
+                          max_value + height * margin_factor])
+            elif max_value < min_value:
+                max_value, min_value = min_value, max_value
+                height = max_value - min_value
+                plt.ylim([min_value - height * margin_factor,
+                          max_value + height * margin_factor])
+            else:
+                height = 0.2
+                plt.ylim([min_value - height * margin_factor,
+                          max_value + height * margin_factor])
+            fig_index += 1
+            filename = f'{image_prefix}_figure_{fig_index}.png'
+            plt.savefig(os.path.join(IMAGES_DIR, filename))
+            images.append(filename)
+
+        html_code = ''
+        for image_name in images:
+            image_html = f'<img src="/static/images/{image_name}" alt="image n/a" width="1000px" height="240px">'
+            print(image_html)
+            html_code += image_html
+
+        return web.json_response(
+            text=html_code,
+            content_type='text/html'
         )
-        try:
-            content = load_static_content(relative_filepath)
-        except FileNotFoundError:
-            return web.Response(body="404 not found".encode(), status=404)
-
-        content_type = 'text/html'
-        if directory == 'css':
-            content_type = 'text/css'
-
-        return web.Response(
-            body=content.encode(),
-            content_type=content_type)
-
 
     async def main_page_handler(self, request):
         template = env.get_template('index.html')
@@ -81,7 +107,9 @@ if __name__ == '__main__':
             web.get('/', handler.main_page_handler),
             web.get('/intro', handler.handle_intro),
             web.get('/greet/{name}', handler.handle_greeting),
-            web.get(r"/static/{directory}/{filename}", handler.static_handler)
+            web.get('/tracers', handler.tracers_handler),
+            web.get('/tracer_run', handler.tracer_run_handler)
         ]
     )
+    app.router.add_static('/static', PATH_TO_STATIC)
     web.run_app(app, port=8900)

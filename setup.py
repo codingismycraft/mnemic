@@ -12,7 +12,7 @@ from setuptools import find_packages, setup
 setup(
     name="dolon",
     description="A performance tracer application.",
-    version='0.0.32',
+    version='0.0.33',
     packages=find_packages(),
     install_requires=[
         "asyncpg",

@@ -23,3 +23,11 @@ SQL_SELECT_LATEST_RUN = """
 select uuid from tracing_run where app_name=$1 
 order by creation_time desc limit 1
 """
+
+SQL_SELECT_ALL_TRACER_RUNS = """
+ select distinct(app_name) as app_name from (select app_name from tracing_run order by creation_time desc) b;
+"""
+
+SQL_SELECT_RUNS = """
+select to_char(creation_time, 'YYYY-MM-DD HH24:MI:SS') as creation_time, uuid from tracing_run where app_name = $1 order by creation_time desc;
+"""

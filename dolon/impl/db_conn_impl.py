@@ -63,7 +63,7 @@ class DbConnectionImpl:
         :raises asyncpg.exceptions.PostgresError
         """
         async with self._conn_pool.acquire() as connection:
-            statement = await connection.prepare(sql)
+            statement = await connection.prepare()
             args = query_args or []
             async with connection.transaction():
                 async for record in statement.cursor(
