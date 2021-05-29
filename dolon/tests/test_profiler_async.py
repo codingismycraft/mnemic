@@ -4,20 +4,10 @@ import asyncio
 import unittest
 
 import dolon.profiler as profiler
+import dolon.tests.utils as utils
 
-
-def async_testable(foo):
-    """Quick and dirty function to allow for tesing of async functions.
-
-    :param coro foo: The async function to test.
-    """
-
-    def test_inner(*args, **kwargs):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(foo(*args, **kwargs))
-
-    test_inner.__name__ = foo.__name__
-    return test_inner
+# Aliases.
+async_testable = utils.async_testable
 
 
 class TestProfiler(unittest.TestCase):
