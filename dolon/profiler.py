@@ -5,6 +5,9 @@ import functools
 import inspect
 import uuid
 
+def clear():
+    """Removes all the profiling functions."""
+    _ProfilingStatCollection.clear()
 
 def profiler(foo):
     """Decorates a callable or coro making it profile-able.
@@ -206,8 +209,12 @@ class _ProfilingStatCollection:
     :ivar str _func_name: The callable's name to profile.
     """
 
-    # _stats = collections.defaultdict(_ProfilingStats)
     _stats = {}
+
+    @classmethod
+    def clear(cls):
+        """Removes all the registered profilers."""
+        cls._stats = {}
 
     @classmethod
     def register_profiling_function(cls, func):
