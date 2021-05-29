@@ -4,10 +4,10 @@ import asyncio
 import unittest
 
 import dolon.profiler as profiler
-import dolon.tests.utils as utils
+import dolon.tests.common as common
 
 # Aliases.
-async_testable = utils.async_testable
+async_testable = common.async_testable
 
 
 class TestProfiler(unittest.TestCase):
