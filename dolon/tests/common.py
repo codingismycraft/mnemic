@@ -17,7 +17,7 @@ def async_testable(foo):
 
     def test_inner(*args, **kwargs):
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(foo(*args, **kwargs))
+        return loop.run_until_complete(foo(*args, **kwargs))
 
     test_inner.__name__ = foo.__name__
     return test_inner

@@ -1,7 +1,14 @@
 """Exposes the basic interface to interact with the serialization means."""
 
 import dolon.impl.utils_impl as utils_impl
-import dolon.impl.get_all_tracers_impl as get_all_tracers_impl
+
+
+def set_conn_str(conn_str):
+    """Sets the connection string to the database.
+
+    :param str conn_str: The connection string to set.
+    """
+    utils_impl.set_conn_str(conn_str)
 
 
 async def process_message(db, payload):
@@ -27,6 +34,8 @@ async def process_message(db, payload):
             "uuid": identifier,
             "row_data": [12.2, 123.1]
         }
+
+    raises: InvalidMessage
     """
     await utils_impl.process_message(db, payload)
 
@@ -48,7 +57,7 @@ async def get_all_tracers():
     :returns: A list with the names of all tracing runs.
     :rtype: list[str]
     """
-    return await get_all_tracers_impl.get_all_tracers()
+    return await utils_impl.get_all_tracers()
 
 
 async def get_trace_as_json(uuid):

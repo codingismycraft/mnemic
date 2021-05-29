@@ -37,21 +37,22 @@ function add_tracer_run(value) {
         run_li.uuid = run_data["uuid"];
         new_ul.appendChild(run_li);
     });
-
     new_li.appendChild(new_ul);
-
-
     $(tracer_tree_ctrl).append(new_li)
 }
 
 
 function load_tracer_tree_view() {
-    $.get("tracers", function (data) {
-        $.each(data, function (index, value) {
-            add_tracer_run(value)
-        });
-        update_tracing_tree();
-    });
+    $.get("tracers",
+        function (data) {
+            $.each(data, function (index, value) {
+                add_tracer_run(value)
+            });
+            update_tracing_tree();
+        })
+        .error(function () {
+            document.body.innerHTML = "500 Error.."
+        })
 }
 
 function load_run(uuid) {
@@ -60,7 +61,11 @@ function load_run(uuid) {
         $("#right").empty()
         $("#right").append(data)
         $('body').removeClass('waiting');
-    });
+    })
+    .error(function () {
+            document.body.innerHTML = "500 Error.."
+        })
+    ;
 
     $.get("trace_run_info?uuid=" + uuid, function (data) {
         $("#tracer_run_info").html("name: <b>" + data['app_name'] + "</b> Number of data points: <b>" + data["counter"] + "</b> Started: <b>" + data['started'] + "</b> duration: <b>" + data['duration'] + "</b>")

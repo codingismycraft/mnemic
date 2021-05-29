@@ -23,7 +23,7 @@ class DbConnection:
 
         :param int min_size: The min number of pooled connections.
         :param int max_size: The max number of pooled connections.
-        :param str conn_str: The connection string to the db.
+        :param str|None conn_str: The connection string to the db.
         """
         self._min_size = min_size
         self._max_size = max_size

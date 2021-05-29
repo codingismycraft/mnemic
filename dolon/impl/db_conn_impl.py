@@ -21,28 +21,12 @@ class DbConnectionImpl:
         self._max_size = max_size
         self._conn_str = conn_str
 
-    def _get_conn_str(self):
-        """Returns the database connection string.
-
-        :return: The database connection string.
-        :rtype: str
-        """
-        if self._conn_str:
-            return self._conn_str
-        else:
-            user = os.environ["POSTGRES_USER"]
-            password = os.environ["POSTGRES_PASSWORD"]
-            db = os.environ["POSTGRES_DB"]
-            host = os.environ.get("HOST", _DEFAULT_HOST)
-
-            return f'postgresql://{user}:{password}@{host}:5432/{db}'
-
     def get_conn_pool(self):
         return self._conn_pool
 
     async def __aenter__(self):
         self._conn_pool = await asyncpg.create_pool(
-            self._get_conn_str(),
+            self._conn_str,
             min_size=self._min_size,
             max_size=self._max_size,
             statement_cache_size=0,
