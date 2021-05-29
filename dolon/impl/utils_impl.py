@@ -46,14 +46,11 @@ async def get_latest_trace(app_name):
                 async for record in stmt.cursor(app_name,
                                                 prefetch=_PREFETCH_SIZE):
                     uuid = record['uuid']
-        return await get_trace(uuid, db)
+        return await _get_trace(uuid, db)
 
 
-async def get_trace(uuid, db=None):
-    if not db:
-        async with DbConnection() as db:
-            return await _get_trace(uuid, db)
-    else:
+async def get_trace(uuid):
+    async with DbConnection() as db:
         return await _get_trace(uuid, db)
 
 
