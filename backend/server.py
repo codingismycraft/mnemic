@@ -26,6 +26,8 @@ class CustomMsgProtocol(asyncio.BaseProtocol):
 
 
 async def run():
+    conn_str = f'postgresql://postgres:postgres123@localhost:5432/mnemic'
+    utils.set_conn_str(conn_str)
     stop_event = asyncio.Event()
     loop = asyncio.get_event_loop()
     await loop.create_datagram_endpoint(
@@ -46,7 +48,7 @@ async def run():
             )
         )
     logging.info("Starting UDP server")
-    async with db_conn.DbConnection() as db:
+    async with db_conn.DbConnection(conn_str=conn_str) as db:
         CustomMsgProtocol.set_db(db)
         await stop_event.wait()
 

@@ -12,7 +12,6 @@ import dolon.impl.db_stats as db_stats
 import dolon.impl.trace_client_impl as trace_client_impl
 
 
-
 async def start_tracer(app_name, frequency, host, port, *diagnostics):
     """Starts a tracer.
 

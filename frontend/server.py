@@ -5,6 +5,8 @@ import uuid
 import jinja2
 import pandas as pd
 
+import aiohttp
+
 from aiohttp import web
 from io import StringIO
 import matplotlib.pyplot as plt
@@ -43,8 +45,13 @@ class Handler:
         return web.json_response(data)
 
     async def tracers_handler(self, request):
-        data = await utils.get_all_tracers()
-        return web.json_response(data)
+        try:
+            data = await utils.get_all_tracers()
+            return web.json_response(data)
+        except Exception as ex:
+            logger.exception(ex)
+            raise aiohttp.web.HTTPInternalServerError()
+
 
     async def tracer_run_handler(self, request):
         uuid_for_run = request.rel_url.query['uuid']
@@ -113,6 +120,8 @@ class Handler:
 
 
 if __name__ == '__main__':
+    conn_str = f'postgresql://postgres:postgres123@localhost:5432/mnemic'
+    utils.set_conn_str(conn_str)
     app = web.Application()
     handler = Handler()
     app.add_routes(

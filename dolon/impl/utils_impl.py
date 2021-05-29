@@ -4,12 +4,24 @@ import json
 import time
 
 import dolon.db_conn as db_conn
+import dolon.exceptions as exceptions
 import dolon.impl.constants as constants
 
 # Aliases.
 DbConnection = db_conn.DbConnection
 
 _PREFETCH_SIZE = 100
+
+_CONN_STR = None
+
+
+def set_conn_str(conn_str):
+    """Sets the connection string to the database.
+
+    :param str conn_str: The connection string to set.
+    """
+    global _CONN_STR
+    _CONN_STR = conn_str
 
 
 async def process_message(db, payload):
@@ -35,6 +47,8 @@ async def process_message(db, payload):
             "uuid": identifier,
             "row_data": [12.2, 123.1]
         }
+
+    raises: InvalidMessage
     """
     if not isinstance(payload, dict):
         assert isinstance(payload, str)
@@ -43,15 +57,29 @@ async def process_message(db, payload):
         msg = payload
     # logging.info(str(payload)) # Will cause missed messages.
     msg_type = msg.get('msg_type')
-    if msg_type == "create_trace_run":
-        identifier = msg.get('uuid')
-        app_name = msg.get('app_name')
-        column_names = list(msg.get('column_names'))
-        await _create_tracer(db, identifier, app_name, *column_names)
-    elif msg_type == 'row':
-        identifier = msg.get('uuid')
-        row_data = msg.get('row_data')
-        await _insert_row(db, identifier, *row_data)
+    try:
+        if msg_type == "create_trace_run":
+            identifier = msg.get('uuid')
+            app_name = msg.get('app_name')
+            column_names = msg.get('column_names')
+            if not all([identifier, app_name, column_names]):
+                raise exceptions.InvalidMessage(
+                    f"Message not supported: {str(payload)}"
+                )
+            column_names = list(column_names)
+            await _create_tracer(db, identifier, app_name, *column_names)
+        elif msg_type == 'row':
+            identifier = msg.get('uuid')
+            row_data = msg.get('row_data')
+            await _insert_row(db, identifier, *row_data)
+        else:
+            raise exceptions.InvalidMessage(
+                f"Message not supported: {str(payload)}"
+            )
+    except Exception as ex:
+        raise exceptions.InvalidMessage(
+            f"Message not supported: {str(payload)}"
+        ) from ex
 
 
 async def get_trace_as_json(uuid):
@@ -67,7 +95,7 @@ async def get_trace_as_json(uuid):
     field_names = lines[0].split(',')
     columns = [list() for _ in range(len(field_names))]
 
-    for line in lines[1:-1]:
+    for line in lines[1:]:
         fields = line.split(',')
         for index, value in enumerate(fields):
             try:
@@ -95,7 +123,7 @@ async def get_trace_run_info(uuid):
     from_time = None
     to_time = None
 
-    async with DbConnection() as db:
+    async with DbConnection(conn_str=_CONN_STR) as db:
         conn_pool = db.get_conn_pool()
         async with conn_pool.acquire() as conn:
             stmt = await conn.prepare(constants.SQL_SELECT_APP_NAME)
@@ -127,7 +155,7 @@ async def get_latest_trace(app_name):
 
     :return: A list of objects.
     """
-    async with DbConnection() as db:
+    async with DbConnection(conn_str=_CONN_STR) as db:
         conn_pool = db.get_conn_pool()
         async with conn_pool.acquire() as conn:
             stmt = await conn.prepare(constants.SQL_SELECT_LATEST_RUN)
@@ -146,7 +174,7 @@ async def get_trace(uuid):
     :returns: A list of strings representing a csv view of the tracing run.
     :rtype: list[str]
     """
-    async with DbConnection() as db:
+    async with DbConnection(conn_str=_CONN_STR) as db:
         return await _get_trace(uuid, db)
 
 
@@ -209,3 +237,45 @@ async def _get_trace(uuid, db):
                 values = [str(v) for v in list(dict(record).values())]
                 lines.append(','.join(values))
         return '\n'.join(lines)
+
+async def get_all_tracers():
+    tracers = []
+    async with DbConnection(conn_str=_CONN_STR) as db:
+        tracer_names = await _get_tracer_names(db)
+        for tracer_name in tracer_names:
+            tracers.append(
+                {
+                    "tracer_name": tracer_name,
+                    'runs': await _get_tracer_runs(db, tracer_name)
+                }
+            )
+
+        return tracers
+
+
+async def _get_tracer_names(db):
+    tracer_names = []
+    conn_pool = db.get_conn_pool()
+    async with conn_pool.acquire() as conn:
+        stmt = await conn.prepare(constants.SQL_SELECT_ALL_TRACER_RUNS)
+        async with conn.transaction():
+            async for record in stmt.cursor(prefetch=_PREFETCH_SIZE):
+                tracer_names.append(record['app_name'])
+    return tracer_names
+
+
+async def _get_tracer_runs(db, app_name):
+    tracer_runs = []
+    conn_pool = db.get_conn_pool()
+    async with conn_pool.acquire() as conn:
+        stmt = await conn.prepare(constants.SQL_SELECT_RUNS)
+        async with conn.transaction():
+            async for record in stmt.cursor(app_name, prefetch=_PREFETCH_SIZE):
+                tracer_runs.append(
+                    {
+                        'creation_time': record['creation_time'],
+                        'uuid': record['uuid'],
+                    }
+
+                )
+    return tracer_runs
