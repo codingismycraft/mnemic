@@ -1,3 +1,4 @@
+import logging
 import os
 import uuid
 
@@ -9,6 +10,8 @@ from io import StringIO
 import matplotlib.pyplot as plt
 
 import dolon.utils as utils
+
+logger = logging.getLogger("mnemic")
 
 # root = os.path.dirname(os.path.abspath(__file__))
 # templates_dir = os.path.join(root, 'templates')
@@ -33,6 +36,12 @@ PATH_TO_STATIC = os.path.join(dir_path, 'static')
 
 class Handler:
 
+    async def trace_run_info_handler(self, request):
+        uuid_for_run = request.rel_url.query['uuid']
+        data = await utils.get_trace_run_info(uuid_for_run)
+        logger.info(data)
+        return web.json_response(data)
+
     async def tracers_handler(self, request):
         data = await utils.get_all_tracers()
         return web.json_response(data)
@@ -48,27 +57,31 @@ class Handler:
         for column_name in df.columns:
             if column_name == 'time':
                 continue
-            min_value = min(df[column_name])
-            max_value = max(df[column_name])
-            df.plot.line(x="time", y=column_name, rot=0, grid=True,
-                         figsize=(12, 3), title=column_name)
-            if max_value > min_value:
-                height = max_value - min_value
-                plt.ylim([min_value - height * margin_factor,
-                          max_value + height * margin_factor])
-            elif max_value < min_value:
-                max_value, min_value = min_value, max_value
-                height = max_value - min_value
-                plt.ylim([min_value - height * margin_factor,
-                          max_value + height * margin_factor])
-            else:
-                height = 0.2
-                plt.ylim([min_value - height * margin_factor,
-                          max_value + height * margin_factor])
-            fig_index += 1
-            filename = f'{image_prefix}_figure_{fig_index}.png'
-            plt.savefig(os.path.join(IMAGES_DIR, filename))
-            images.append(filename)
+
+            try:
+                min_value = min(df[column_name])
+                max_value = max(df[column_name])
+                df.plot.line(x="time", y=column_name, rot=0, grid=True,
+                             figsize=(12, 3), title=column_name)
+                if max_value > min_value:
+                    height = max_value - min_value
+                    plt.ylim([min_value - height * margin_factor,
+                              max_value + height * margin_factor])
+                elif max_value < min_value:
+                    max_value, min_value = min_value, max_value
+                    height = max_value - min_value
+                    plt.ylim([min_value - height * margin_factor,
+                              max_value + height * margin_factor])
+                else:
+                    height = 0.2
+                    plt.ylim([min_value - height * margin_factor,
+                              max_value + height * margin_factor])
+                fig_index += 1
+                filename = f'{image_prefix}_figure_{fig_index}.png'
+                plt.savefig(os.path.join(IMAGES_DIR, filename))
+                images.append(filename)
+            except Exception as ex:
+                print(ex, type(ex))
 
         html_code = ''
         for image_name in images:
@@ -108,8 +121,10 @@ if __name__ == '__main__':
             web.get('/intro', handler.handle_intro),
             web.get('/greet/{name}', handler.handle_greeting),
             web.get('/tracers', handler.tracers_handler),
-            web.get('/tracer_run', handler.tracer_run_handler)
+            web.get('/tracer_run', handler.tracer_run_handler),
+            web.get('/trace_run_info', handler.trace_run_info_handler)
         ]
+
     )
     app.router.add_static('/static', PATH_TO_STATIC)
     web.run_app(app, port=8900)
