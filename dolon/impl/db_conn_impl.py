@@ -53,7 +53,6 @@ class DbConnectionImpl:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self._conn_pool:
-            print("Closing connection")
             await self._conn_pool.close()
             self._conn_pool = None
 
@@ -63,7 +62,7 @@ class DbConnectionImpl:
         :raises asyncpg.exceptions.PostgresError
         """
         async with self._conn_pool.acquire() as connection:
-            statement = await connection.prepare(sql)
+            statement = await connection.prepare()
             args = query_args or []
             async with connection.transaction():
                 async for record in statement.cursor(

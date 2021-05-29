@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="container">
+    <div id="top">Mnemic
+        <span id="tracer_run_info"></span>
+    </div>
+    <div id="left">
+        <ul id="tracer_tree_ctrl"></ul>
+        <script>update_tracing_tree();</script>
+    </div>
+    <div id="right">
+    </div>
+</div>
+{% endblock %}
+{% block javascript %}
+{% endblock %}
