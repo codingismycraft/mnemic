@@ -1,0 +1,1 @@
+Stores the curve images before sending to client.
