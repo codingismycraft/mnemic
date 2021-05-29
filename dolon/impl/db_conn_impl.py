@@ -53,7 +53,6 @@ class DbConnectionImpl:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self._conn_pool:
-            print("Closing connection")
             await self._conn_pool.close()
             self._conn_pool = None
 

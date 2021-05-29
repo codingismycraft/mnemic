@@ -13,7 +13,7 @@ async def get_latest_trace(app_name):
 
 
 async def get_trace(uuid, db=None):
-    return   await utils_impl.get_trace(uuid, db)
+    return await utils_impl.get_trace(uuid, db)
 
 
 async def get_all_tracers():
@@ -22,3 +22,7 @@ async def get_all_tracers():
 
 async def get_trace_as_json(uuid):
     return await utils_impl.get_trace_as_json(uuid)
+
+
+async def get_trace_run_info(uuid):
+    return await utils_impl.get_trace_run_info(uuid)

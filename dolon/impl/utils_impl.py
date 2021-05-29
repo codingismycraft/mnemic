@@ -1,7 +1,9 @@
 """Exposes the basic interface to interact with the serialization means."""
 
+import datetime
 import io
 import json
+import time
 
 import pandas as pd
 
@@ -122,3 +124,35 @@ async def get_trace_as_json(uuid):
         trace_as_json[field_name] = values
 
     return trace_as_json
+
+
+async def get_trace_run_info(uuid):
+    app_name = None
+    counter = None
+    from_time = None
+    to_time = None
+
+    async with DbConnection() as db:
+        conn_pool = db.get_conn_pool()
+        async with conn_pool.acquire() as conn:
+            stmt = await conn.prepare(constants.SQL_SELECT_APP_NAME)
+            async with conn.transaction():
+                async for record in stmt.cursor(uuid,
+                                                prefetch=_PREFETCH_SIZE):
+                    app_name = record['app_name']
+
+            stmt = await conn.prepare(constants.SQL_SELECT_RUN_INFO)
+            async with conn.transaction():
+                async for record in stmt.cursor(uuid,
+                                                prefetch=_PREFETCH_SIZE):
+                    counter = record['counter']
+                    from_time = record['from_time']
+                    to_time = record['to_time']
+    total_secs = (to_time - from_time).total_seconds()
+
+    return {
+        'app_name': app_name,
+        'counter': counter,
+        'started': from_time.strftime("%b %d %Y %H:%M:%S"),
+        'duration': time.strftime("%H hours %M minutes %S seconds", time.gmtime(total_secs))
+    }

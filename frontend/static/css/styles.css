@@ -1,3 +1,13 @@
+html, body {
+        height: 100%;
+        margin: 0px;
+        background: whitesmoke;
+    }
+
+body.waiting * {
+    cursor: progress;
+}
+
 #container {
     top: 0px;
     bottom: 0px;
@@ -17,7 +27,7 @@
     top: 50px;
     width: 350px;
     bottom: 0px;
-    background: #787878
+    background: whitesmoke;
 }
 #right {
     top: 50px;

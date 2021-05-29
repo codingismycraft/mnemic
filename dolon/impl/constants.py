@@ -31,3 +31,18 @@ SQL_SELECT_ALL_TRACER_RUNS = """
 SQL_SELECT_RUNS = """
 select to_char(creation_time, 'YYYY-MM-DD HH24:MI:SS') as creation_time, uuid from tracing_run where app_name = $1 order by creation_time desc;
 """
+
+
+SQL_SELECT_APP_NAME = """Select app_name from tracing_run where uuid=$1"""
+
+SQL_SELECT_RUN_INFO = """
+select                                                                             
+    count(*) as counter, 
+    min(a.date_time) as from_time,  
+    max(a.date_time) as to_time
+from 
+    tracing_row a
+where 
+    a.uuid=$1
+"""
+
