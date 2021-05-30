@@ -1,8 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
 <div id="container">
-    <div id="top">Mnemic
-        <span id="tracer_run_info"></span>
+    <div id="top">
+        <div class="logo"> Mnemic</div>
+        <div class="tracer_run_description">
+            <div id="tracer_run_name_div">
+                <span id="tracer_run_name"></span>
+            </div>
+            <div>
+                <span id="tracer_description"></span>
+            </div>
+        </div>
     </div>
     <div id="left">
         <ul id="tracer_tree_ctrl"></ul>

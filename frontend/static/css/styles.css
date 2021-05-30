@@ -1,8 +1,8 @@
 html, body {
-        height: 100%;
-        margin: 0px;
-        background: whitesmoke;
-    }
+    height: 100%;
+    margin: 0px;
+    background: whitesmoke;
+}
 
 body.waiting * {
     cursor: progress;
@@ -13,24 +13,29 @@ body.waiting * {
     bottom: 0px;
     left: 0px;
     right: 0px;
+    height: 100%;
 }
+
 #top, #left, #right {
     position: absolute
 }
+
 #top {
     top: 0;
     width: 100%;
-    height: 50px;
-    background: #00b7f0
+    height: 90px;
+    background: #12232E;
 }
+
 #left {
-    top: 50px;
+    top: 90px;
     width: 350px;
     bottom: 0px;
     background: whitesmoke;
 }
+
 #right {
-    top: 50px;
+    top: 90px;
     left: 350px;
     right: 0;
     bottom: 0px;
@@ -38,62 +43,62 @@ body.waiting * {
 }
 
 ul, #myUL {
-  list-style-type: none;
+    list-style-type: none;
 }
 
 #myUL {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .tracer_name {
-  cursor: pointer;
-  -webkit-user-select: none; /* Safari 3.1+ */
-  -moz-user-select: none; /* Firefox 2+ */
-  -ms-user-select: none; /* IE 10+ */
-  user-select: none;
+    cursor: pointer;
+    -webkit-user-select: none; /* Safari 3.1+ */
+    -moz-user-select: none; /* Firefox 2+ */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none;
 }
 
 .tracer_name::before {
-  content: "\25B6";
-  color: black;
-  display: inline-block;
-  margin-right: 6px;
+    content: "\25B6";
+    color: black;
+    display: inline-block;
+    margin-right: 6px;
 }
 
 .tracer_name-down::before {
-  -ms-transform: rotate(90deg); /* IE 9 */
-  -webkit-transform: rotate(90deg); /* Safari */'
-  transform: rotate(90deg);
+    -ms-transform: rotate(90deg); /* IE 9 */
+    -webkit-transform: rotate(90deg); /* Safari */
+' transform: rotate(90 deg);
 }
 
 .tracer_run {
-  cursor: pointer;
-  -webkit-user-select: none; /* Safari 3.1+ */
-  -moz-user-select: none; /* Firefox 2+ */
-  -ms-user-select: none; /* IE 10+ */
-  user-select: none;
+    cursor: pointer;
+    -webkit-user-select: none; /* Safari 3.1+ */
+    -moz-user-select: none; /* Firefox 2+ */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none;
 }
 
 .tracer_run::before {
-  content: "\25CF";
-  color: black;
-  display: inline-block;
-  margin-right: 6px;
+    content: "\25CF";
+    color: black;
+    display: inline-block;
+    margin-right: 6px;
 }
 
 .tracer_run-down::before {
-  -ms-transform: rotate(90deg); /* IE 9 */
-  -webkit-transform: rotate(90deg); /* Safari */'
-  transform: rotate(90deg);
+    -ms-transform: rotate(90deg); /* IE 9 */
+    -webkit-transform: rotate(90deg); /* Safari */
+' transform: rotate(90 deg);
 }
 
 .nested {
-  display: none;
+    display: none;
 }
 
 .active {
-  display: block;
+    display: block;
 }
 
 .line_graph {
@@ -103,3 +108,42 @@ ul, #myUL {
     background-color: #00b7f0;
 
 }
+
+.logo {
+    font-weight: bold;
+    color: #EEFBFB;
+    width: 25%;
+    float: left;
+    padding-top: 18px;
+    padding-left: 18px;
+}
+
+.tracer_run_description {
+    color: yellow;
+    margin-left: 25%;
+}
+
+#tracer_run_name {
+    color: orange;
+    font-weight: bold;
+    font-size: xx-large;
+    padding-left: 200px;
+}
+
+#tracer_run_name_div {
+    margin: 12px;
+    margin-bottom: 22px;
+}
+
+label {
+     color: #EEFBFB;
+     padding-left: 9px;
+     padding-right: 6px;
+ }
+
+value {
+    background-color: #007CC7;
+    padding: 8px
+}
+
+

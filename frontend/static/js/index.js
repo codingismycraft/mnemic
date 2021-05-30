@@ -15,7 +15,7 @@ function update_tracing_tree() {
         toggler[i].addEventListener("click", function (event) {
             // this.parentElement.querySelector(".nested").classList.toggle("active");
             // this.classList.toggle("tracer_name-down");
-            load_run(event.target.uuid);
+            load_run_info(event.target.uuid);
         });
     }
 }
@@ -56,8 +56,9 @@ function load_tracer_tree_view() {
         })
 }
 
-function load_run(uuid) {
+function load_run_info(uuid) {
     $('body').addClass('waiting');
+
     $.get("tracer_run?uuid=" + uuid, function (data) {
         $("#right").empty()
         $("#right").append(data)
@@ -69,7 +70,10 @@ function load_run(uuid) {
         });
 
     $.get("trace_run_info?uuid=" + uuid, function (data) {
-        $("#tracer_run_info").html("name: <b>" + data['app_name'] + "</b> Number of data points: <b>" + data["counter"] + "</b> Started: <b>" + data['started'] + "</b> duration: <b>" + data['duration'] + "</b>")
+        var txt = '<label>Started</label> <value>' + data['started'] + '</value><label>Count</label><value>'
+            + data['counter'] + '</value><label>Duration</label><value>' + data['duration'] +'</value>';
+        $("#tracer_run_name").html(data['app_name']);
+        $("#tracer_description").html(txt);
     }).error(function () {
             $('body').removeClass('waiting');
             alert("500 Error..");

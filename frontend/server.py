@@ -112,12 +112,10 @@ class Handler:
                 'duration': duration-time
             }
         """
-        try:
-            uuid_for_run = request.rel_url.query['uuid']
-            data = await utils.get_trace_run_info(uuid_for_run)
-            return web.json_response(data)
-        except Exception as ex:
-            print(ex)
+        uuid_for_run = request.rel_url.query['uuid']
+        data = await utils.get_trace_run_info(uuid_for_run)
+        return web.json_response(data)
+
 
     @web_handler
     async def tracers_handler(self, request):

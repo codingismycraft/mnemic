@@ -1,7 +1,10 @@
 """Implementation details to interact with the serialization means."""
 
+import datetime
 import json
+import math
 import time
+
 
 import dolon.db_conn as db_conn
 import dolon.exceptions as exceptions
@@ -146,13 +149,11 @@ async def get_trace_run_info(uuid):
         started = creation_time.strftime("%b %d %Y %H:%M:%S")
         duration = 'n/a'
     else:
-        total_secs = (to_time - from_time).total_seconds()
         started = from_time.strftime("%b %d %Y %H:%M:%S")
-        duration = time.strftime("%H hours %M minutes %S seconds",
-                                  time.gmtime(total_secs))
+        duration = _get_duration(to_time, from_time)
     return {
         'app_name': app_name,
-        'counter': counter,
+        'counter': f'{counter:,}',
         'started': started,
         'duration': duration
     }
@@ -287,3 +288,38 @@ async def _get_tracer_runs(db, app_name):
 
                 )
     return tracer_runs
+
+
+def _get_duration(start_time, end_time):
+    """Returns the duration from t1 to t2.
+
+    :param datetime.datetime start_time: Start time.
+    :param datetime.datetime end_time: End time.
+
+    :return: The duration as a string.
+    :rtype: str
+    """
+    diff = int(math.fabs(int((start_time - end_time).total_seconds())))
+
+    days = diff // constants.DAY_IN_SECONDS
+    diff -= days * constants.DAY_IN_SECONDS
+
+    hours = diff // constants.HOUR_IN_SECONDS
+    diff -= hours * constants.HOUR_IN_SECONDS
+
+    minutes = diff // constants.MINUTE_IN_SECONDS
+    diff -= minutes * constants.MINUTE_IN_SECONDS
+
+    seconds = diff
+
+    tokens = []
+    if days:
+        tokens.append(f"{days}days")
+    if hours:
+        tokens.append(f"{hours}hours")
+    if minutes:
+        tokens.append(f"{minutes}min")
+    if seconds:
+        tokens.append(f"{seconds}secs")
+
+    return ', '.join(tokens)
