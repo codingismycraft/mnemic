@@ -1,6 +1,8 @@
 """Exposes the mnemic UI server."""
 
+import asyncio
 import functools
+import glob
 import logging
 import os
 import uuid
@@ -10,6 +12,7 @@ import aiohttp.web as web
 import io
 import jinja2
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 import dolon.utils as utils
@@ -31,6 +34,21 @@ _PATH_TO_STATIC = os.path.join(_CURR_DIR, 'static')
 _IMG_URL = ('<img src="/static/images/{image_name}" alt="image n/a" '
             'width="1000px" height="240px">').format
 _CONN_STR = f'postgresql://postgres:postgres123@localhost:5432/mnemic'
+
+
+async def clear_images():
+    """Removes unused images."""
+    logger.info("Enters image cleaning loop.")
+    while 1:
+        await asyncio.sleep(30)
+        logger.info("Deleting images..")
+        files = glob.glob(f'{_IMAGES_DIR}/*.png')
+        for f in files:
+            try:
+                os.remove(f)
+            except Exception as ex:
+                logger.exception(ex)
+
 
 def web_handler(handler_func):
     """Wraps a handler function adding standard processing."""
@@ -108,8 +126,11 @@ class Handler:
             try:
                 min_value = min(df[column_name])
                 max_value = max(df[column_name])
-                df.plot.line(x="time", y=column_name, rot=0, grid=True,
-                             figsize=(12, 3), title=column_name)
+                title = column_name.replace("_", " ").replace("-", " ").title()
+                the_plot = df.plot.line(x="time", y=column_name, rot=0,
+                                        grid=True,
+                                        figsize=(12, 3), title=title,
+                                        legend=False)
                 if max_value > min_value:
                     height = max_value - min_value
                     plt.ylim([min_value - height * margin_factor,
@@ -125,7 +146,14 @@ class Handler:
                               max_value + height * margin_factor])
                 fig_index += 1
                 filename = f'{image_prefix}_figure_{fig_index}.png'
+                the_plot.set_facecolor('gainsboro')
+                total_number_of_points = len(df)
+                x_ticks = np.arange(10, total_number_of_points,
+                                    total_number_of_points / 12)
+                x_ticks = [int(index) for index in x_ticks]
+                plt.xticks(x_ticks)
                 plt.savefig(os.path.join(_IMAGES_DIR, filename))
+                plt.close(the_plot.get_figure())
                 images.append(filename)
             except Exception as ex:
                 logger.exception(ex)
@@ -164,5 +192,6 @@ if __name__ == '__main__':
             web.get('/trace_run_info', handler.trace_run_info_handler)
         ]
     )
+    asyncio.ensure_future(clear_images())
     app.router.add_static('/static', _PATH_TO_STATIC)
     web.run_app(app, port=_PORT)
