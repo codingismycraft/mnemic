@@ -14,6 +14,7 @@ import jinja2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 import dolon.utils as utils
 
@@ -32,7 +33,7 @@ _CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 _IMAGES_DIR = os.path.join(_CURR_DIR, 'static', 'images')
 _PATH_TO_STATIC = os.path.join(_CURR_DIR, 'static')
 _IMG_URL = ('<img src="/static/images/{image_name}" alt="image n/a" '
-            'width="1000px" height="240px">').format
+            'width="{width}px" height="{height}px">').format
 _CONN_STR = f'postgresql://postgres:postgres123@localhost:5432/mnemic'
 
 
@@ -65,6 +66,36 @@ def web_handler(handler_func):
     return _inner
 
 
+def make_image_file():
+    image_prefix = str(uuid.uuid4())
+    filename = f'{image_prefix}_figure.png'
+    return filename
+
+
+def make_correlation_heat_map(
+        data,
+        title='Correlation Heat Map',
+        linewidths=0,
+        figsize=(9, 6),
+        annot=False):
+    cmap = sns.diverging_palette(14, 120, as_cmap=True)
+    data = data.dropna()
+    corr = data.corr()
+    for column_name in corr.columns:
+        corr[column_name] = corr[column_name].abs()
+    _, ax = plt.subplots(figsize=figsize)
+    if title:
+        ax.set_title(title)
+
+    heat_map = sns.heatmap(corr, annot=annot, fmt="2.2f",
+                           linewidths=linewidths, ax=ax, cmap=cmap)
+    figure = heat_map.get_figure()
+    figure.set_size_inches(10, 12)
+    filename = make_image_file()
+    figure.savefig(os.path.join(_IMAGES_DIR, filename), dpi=400)
+    return filename, figure
+
+
 class Handler:
     """Implements all the web handlers used from the service."""
 
@@ -81,9 +112,12 @@ class Handler:
                 'duration': duration-time
             }
         """
-        uuid_for_run = request.rel_url.query['uuid']
-        data = await utils.get_trace_run_info(uuid_for_run)
-        return web.json_response(data)
+        try:
+            uuid_for_run = request.rel_url.query['uuid']
+            data = await utils.get_trace_run_info(uuid_for_run)
+            return web.json_response(data)
+        except Exception as ex:
+            print(ex)
 
     @web_handler
     async def tracers_handler(self, request):
@@ -115,6 +149,12 @@ class Handler:
         uuid_for_run = request.rel_url.query['uuid']
         data = await utils.get_trace(uuid_for_run)
         df = pd.read_csv(io.StringIO(data))
+        if len(df) == 0:
+            # There are no rows for the requested run.
+            return web.json_response(
+                text="<h1>This tracer does not have any rows to show</h1>",
+                content_type='text/html'
+            )
         margin_factor = 0.1
         images = []
         image_prefix = str(uuid.uuid4())
@@ -122,47 +162,47 @@ class Handler:
         for column_name in df.columns:
             if column_name == 'time':
                 continue
-
-            try:
-                min_value = min(df[column_name])
-                max_value = max(df[column_name])
-                title = column_name.replace("_", " ").replace("-", " ").title()
-                the_plot = df.plot.line(x="time", y=column_name, rot=0,
-                                        grid=True,
-                                        figsize=(12, 3), title=title,
-                                        legend=False)
-                if max_value > min_value:
-                    height = max_value - min_value
-                    plt.ylim([min_value - height * margin_factor,
-                              max_value + height * margin_factor])
-                elif max_value < min_value:
-                    max_value, min_value = min_value, max_value
-                    height = max_value - min_value
-                    plt.ylim([min_value - height * margin_factor,
-                              max_value + height * margin_factor])
-                else:
-                    height = 0.2
-                    plt.ylim([min_value - height * margin_factor,
-                              max_value + height * margin_factor])
-                fig_index += 1
-                filename = f'{image_prefix}_figure_{fig_index}.png'
-                the_plot.set_facecolor('gainsboro')
-                total_number_of_points = len(df)
-                x_ticks = np.arange(10, total_number_of_points,
-                                    total_number_of_points / 12)
-                x_ticks = [int(index) for index in x_ticks]
-                plt.xticks(x_ticks)
-                plt.savefig(os.path.join(_IMAGES_DIR, filename))
-                plt.close(the_plot.get_figure())
-                images.append(filename)
-            except Exception as ex:
-                logger.exception(ex)
-                raise aiohttp.web.HTTPInternalServerError()
-
+            min_value = min(df[column_name])
+            max_value = max(df[column_name])
+            title = column_name.replace("_", " ").replace("-", " ").title()
+            the_plot = df.plot.line(x="time", y=column_name, rot=0,
+                                    grid=True,
+                                    figsize=(12, 3), title=title,
+                                    legend=False)
+            if max_value > min_value:
+                height = max_value - min_value
+                plt.ylim([min_value - height * margin_factor,
+                          max_value + height * margin_factor])
+            elif max_value < min_value:
+                max_value, min_value = min_value, max_value
+                height = max_value - min_value
+                plt.ylim([min_value - height * margin_factor,
+                          max_value + height * margin_factor])
+            else:
+                height = 0.2
+                plt.ylim([min_value - height * margin_factor,
+                          max_value + height * margin_factor])
+            fig_index += 1
+            filename = f'{image_prefix}_figure_{fig_index}.png'
+            the_plot.set_facecolor('gainsboro')
+            total_number_of_points = len(df)
+            x_ticks = np.arange(10, total_number_of_points,
+                                total_number_of_points / 12)
+            x_ticks = [int(index) for index in x_ticks]
+            plt.xticks(x_ticks)
+            plt.savefig(os.path.join(_IMAGES_DIR, filename))
+            plt.close(the_plot.get_figure())
+            images.append(filename)
+        correlation_file_name, figure = make_correlation_heat_map(df)
+        plt.close(figure)
         html_code = ''
         for image_name in images:
-            image_html = _IMG_URL(image_name=image_name)
+            image_html = _IMG_URL(image_name=image_name, width=1000, height=240)
             html_code += image_html
+
+        html_code += '<div style:"width:1000px;background-color: white">' + _IMG_URL(
+            image_name=correlation_file_name, width=600, height=500
+        ) + '</div>'
 
         return web.json_response(
             text=html_code,

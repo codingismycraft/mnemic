@@ -51,7 +51,8 @@ function load_tracer_tree_view() {
             update_tracing_tree();
         })
         .error(function () {
-            document.body.innerHTML = "500 Error.."
+            $('body').removeClass('waiting');
+            document.body.innerHTML = "500 Error..";
         })
 }
 
@@ -63,11 +64,14 @@ function load_run(uuid) {
         $('body').removeClass('waiting');
     })
     .error(function () {
-            document.body.innerHTML = "500 Error.."
-        })
-    ;
+            $('body').removeClass('waiting');
+            alert("500 Error..");
+        });
 
     $.get("trace_run_info?uuid=" + uuid, function (data) {
         $("#tracer_run_info").html("name: <b>" + data['app_name'] + "</b> Number of data points: <b>" + data["counter"] + "</b> Started: <b>" + data['started'] + "</b> duration: <b>" + data['duration'] + "</b>")
-    });
+    }).error(function () {
+            $('body').removeClass('waiting');
+            alert("500 Error..");
+        });
 }

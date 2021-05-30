@@ -131,7 +131,7 @@ async def get_trace_run_info(uuid):
                 async for record in stmt.cursor(uuid,
                                                 prefetch=_PREFETCH_SIZE):
                     app_name = record['app_name']
-
+                    creation_time = record['creation_time']
             stmt = await conn.prepare(constants.SQL_SELECT_RUN_INFO)
             async with conn.transaction():
                 async for record in stmt.cursor(uuid,
@@ -139,14 +139,22 @@ async def get_trace_run_info(uuid):
                     counter = record['counter']
                     from_time = record['from_time']
                     to_time = record['to_time']
-    total_secs = (to_time - from_time).total_seconds()
 
+    if to_time is None or from_time is None:
+        # There are no rows for this run
+        counter = 0
+        started = creation_time.strftime("%b %d %Y %H:%M:%S")
+        duration = 'n/a'
+    else:
+        total_secs = (to_time - from_time).total_seconds()
+        started = from_time.strftime("%b %d %Y %H:%M:%S")
+        duration = time.strftime("%H hours %M minutes %S seconds",
+                                  time.gmtime(total_secs))
     return {
         'app_name': app_name,
         'counter': counter,
-        'started': from_time.strftime("%b %d %Y %H:%M:%S"),
-        'duration': time.strftime("%H hours %M minutes %S seconds",
-                                  time.gmtime(total_secs))
+        'started': started,
+        'duration': duration
     }
 
 

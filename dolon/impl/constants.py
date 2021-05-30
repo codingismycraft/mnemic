@@ -33,7 +33,9 @@ select to_char(creation_time, 'YYYY-MM-DD HH24:MI:SS') as creation_time, uuid fr
 """
 
 
-SQL_SELECT_APP_NAME = """Select app_name from tracing_run where uuid=$1"""
+SQL_SELECT_APP_NAME = """
+Select app_name, creation_time from tracing_run where uuid=$1
+"""
 
 SQL_SELECT_RUN_INFO = """
 select                                                                             
