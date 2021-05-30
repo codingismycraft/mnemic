@@ -5,7 +5,6 @@ import json
 import math
 import time
 
-
 import dolon.db_conn as db_conn
 import dolon.exceptions as exceptions
 import dolon.impl.constants as constants
@@ -134,7 +133,7 @@ async def get_trace_run_info(uuid):
                 async for record in stmt.cursor(uuid,
                                                 prefetch=_PREFETCH_SIZE):
                     app_name = record['app_name']
-                    creation_time = record['creation_time']
+                    creation_time = _format_datetime(record['creation_time'])
             stmt = await conn.prepare(constants.SQL_SELECT_RUN_INFO)
             async with conn.transaction():
                 async for record in stmt.cursor(uuid,
@@ -146,10 +145,10 @@ async def get_trace_run_info(uuid):
     if to_time is None or from_time is None:
         # There are no rows for this run
         counter = 0
-        started = creation_time.strftime("%b %d %Y %H:%M:%S")
+        started = creation_time
         duration = 'n/a'
     else:
-        started = from_time.strftime("%b %d %Y %H:%M:%S")
+        started = creation_time
         duration = _get_duration(to_time, from_time)
     return {
         'app_name': app_name,
@@ -247,6 +246,7 @@ async def _get_trace(uuid, db):
                 lines.append(','.join(values))
         return '\n'.join(lines)
 
+
 async def get_all_tracers():
     tracers = []
     async with DbConnection(conn_str=_CONN_STR) as db:
@@ -280,9 +280,10 @@ async def _get_tracer_runs(db, app_name):
         stmt = await conn.prepare(constants.SQL_SELECT_RUNS)
         async with conn.transaction():
             async for record in stmt.cursor(app_name, prefetch=_PREFETCH_SIZE):
+                creation_date = record['creation_time']
                 tracer_runs.append(
                     {
-                        'creation_time': record['creation_time'],
+                        'creation_time': _format_datetime(creation_date),
                         'uuid': record['uuid'],
                     }
 
@@ -314,12 +315,27 @@ def _get_duration(start_time, end_time):
 
     tokens = []
     if days:
-        tokens.append(f"{days}days")
+        tokens.append(f"{days} days")
     if hours:
-        tokens.append(f"{hours}hours")
+        tokens.append(f"{hours} hours")
     if minutes:
-        tokens.append(f"{minutes}min")
+        tokens.append(f"{minutes} min")
     if seconds:
-        tokens.append(f"{seconds}secs")
+        tokens.append(f"{seconds} secs")
 
     return ', '.join(tokens)
+
+
+def _format_datetime(date_to_format):
+    """Formats the passed in date time.
+
+    :param: datetime.datetime date_to_format: The date to format.
+
+    :return: The formatted date.
+    :rtype: str
+    """
+    current_year = datetime.datetime.now().year
+    if date_to_format.year == current_year:
+        return date_to_format.strftime("%a, %b %d, %H:%M")
+    else:
+        return date_to_format.strftime("%a, %b %d %Y, %H:%M")

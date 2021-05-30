@@ -29,7 +29,7 @@ SQL_SELECT_ALL_TRACER_RUNS = """
 """
 
 SQL_SELECT_RUNS = """
-select to_char(creation_time, 'YYYY-MM-DD HH24:MI:SS') as creation_time, uuid from tracing_run where app_name = $1 order by creation_time desc;
+select creation_time as creation_time, uuid from tracing_run where app_name = $1 order by creation_time desc;
 """
 
 
