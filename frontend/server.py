@@ -1,6 +1,7 @@
 """Exposes the mnemic UI server."""
 
 import asyncio
+import datetime
 import functools
 import glob
 import logging
@@ -35,20 +36,25 @@ _PATH_TO_STATIC = os.path.join(_CURR_DIR, 'static')
 _IMG_URL = ('<img src="/static/images/{image_name}" alt="image n/a" '
             'width="{width}px" height="{height}px">').format
 _CONN_STR = f'postgresql://postgres:postgres123@localhost:5432/mnemic'
-
+_IMAGE_CLEANUP_FREQUENCY_IN_SECS = 30
+_IMAGE_MAX_LIFE_SPAN_IN_SECS = 10
 
 async def clear_images():
     """Removes unused images."""
     logger.info("Enters image cleaning loop.")
     while 1:
-        await asyncio.sleep(30)
+        await asyncio.sleep(_IMAGE_CLEANUP_FREQUENCY_IN_SECS)
         logger.info("Deleting images..")
         files = glob.glob(f'{_IMAGES_DIR}/*.png')
         for f in files:
-            try:
-                os.remove(f)
-            except Exception as ex:
-                logger.exception(ex)
+            time_now = datetime.datetime.now()
+            file_time = datetime.datetime.fromtimestamp(os.path.getmtime(f))
+            life_span_in_seconds = (time_now - file_time).total_seconds()
+            if life_span_in_seconds > _IMAGE_MAX_LIFE_SPAN_IN_SECS:
+                try:
+                    os.remove(f)
+                except Exception as ex:
+                    logger.exception(ex)
 
 
 def web_handler(handler_func):
@@ -115,7 +121,6 @@ class Handler:
         uuid_for_run = request.rel_url.query['uuid']
         data = await utils.get_trace_run_info(uuid_for_run)
         return web.json_response(data)
-
 
     @web_handler
     async def tracers_handler(self, request):
