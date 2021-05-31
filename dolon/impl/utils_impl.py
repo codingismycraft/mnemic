@@ -3,7 +3,6 @@
 import datetime
 import json
 import math
-import time
 
 import dolon.db_conn as db_conn
 import dolon.exceptions as exceptions
@@ -13,17 +12,6 @@ import dolon.impl.constants as constants
 DbConnection = db_conn.DbConnection
 
 _PREFETCH_SIZE = 100
-
-_CONN_STR = None
-
-
-def set_conn_str(conn_str):
-    """Sets the connection string to the database.
-
-    :param str conn_str: The connection string to set.
-    """
-    global _CONN_STR
-    _CONN_STR = conn_str
 
 
 async def process_message(db, payload):
@@ -125,7 +113,7 @@ async def get_trace_run_info(uuid):
     from_time = None
     to_time = None
 
-    async with DbConnection(conn_str=_CONN_STR) as db:
+    async with DbConnection() as db:
         conn_pool = db.get_conn_pool()
         async with conn_pool.acquire() as conn:
             stmt = await conn.prepare(constants.SQL_SELECT_APP_NAME)
@@ -163,7 +151,7 @@ async def get_latest_trace(app_name):
 
     :return: A list of objects.
     """
-    async with DbConnection(conn_str=_CONN_STR) as db:
+    async with DbConnection() as db:
         conn_pool = db.get_conn_pool()
         async with conn_pool.acquire() as conn:
             stmt = await conn.prepare(constants.SQL_SELECT_LATEST_RUN)
@@ -182,7 +170,7 @@ async def get_trace(uuid):
     :returns: A list of strings representing a csv view of the tracing run.
     :rtype: list[str]
     """
-    async with DbConnection(conn_str=_CONN_STR) as db:
+    async with DbConnection() as db:
         return await _get_trace(uuid, db)
 
 
@@ -249,7 +237,7 @@ async def _get_trace(uuid, db):
 
 async def get_all_tracers():
     tracers = []
-    async with DbConnection(conn_str=_CONN_STR) as db:
+    async with DbConnection() as db:
         tracer_names = await _get_tracer_names(db)
         for tracer_name in tracer_names:
             tracers.append(

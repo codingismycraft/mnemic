@@ -3,14 +3,6 @@
 import dolon.impl.utils_impl as utils_impl
 
 
-def set_conn_str(conn_str):
-    """Sets the connection string to the database.
-
-    :param str conn_str: The connection string to set.
-    """
-    utils_impl.set_conn_str(conn_str)
-
-
 async def process_message(db, payload):
     """Processes a tracing message storing it to the db.
 

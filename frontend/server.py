@@ -21,11 +21,11 @@ import dolon.utils as utils
 
 logger = logging.getLogger("mnemic")
 
-_PORT = 8900
+_PORT = int(os.environ["FRONT_END_PORT"])
 
 _JINJA_ENV = jinja2.Environment(
     loader=jinja2.PackageLoader(
-        'frontend',
+        'templates',
         'templates'),
     autoescape=jinja2.select_autoescape(['html', 'xml'])
 )
@@ -38,6 +38,7 @@ _IMG_URL = ('<img src="/static/images/{image_name}" alt="image n/a" '
 _CONN_STR = f'postgresql://postgres:postgres123@localhost:5432/mnemic'
 _IMAGE_CLEANUP_FREQUENCY_IN_SECS = 30
 _IMAGE_MAX_LIFE_SPAN_IN_SECS = 10
+
 
 async def clear_images():
     """Removes unused images."""
@@ -223,8 +224,7 @@ class Handler:
         )
 
 
-if __name__ == '__main__':
-    utils.set_conn_str(_CONN_STR)
+def run():
     app = web.Application()
     handler = Handler()
     app.add_routes(
@@ -238,3 +238,7 @@ if __name__ == '__main__':
     asyncio.ensure_future(clear_images())
     app.router.add_static('/static', _PATH_TO_STATIC)
     web.run_app(app, port=_PORT)
+
+
+if __name__ == '__main__':
+    run()

@@ -8,11 +8,12 @@ import random
 import dolon.utils as utils
 import dolon.db_conn as db_conn
 
+_CONN_STR = f'postgresql://postgres:postgres123@localhost:5432/mnemic'
+os.environ["POSTGRES_CONN_STR"] = _CONN_STR
+
 
 async def main():
-    conn_str = f'postgresql://postgres:postgres123@localhost:5432/mnemic'
-    utils.set_conn_str(conn_str)
-    async with db_conn.DbConnection(conn_str=conn_str) as db:
+    async with db_conn.DbConnection() as db:
         identifier = str(uuid.uuid4())
         app_name = 'john - doe'
         msg = {
@@ -29,7 +30,6 @@ async def main():
                 "row_data": [random.uniform(0, 100), random.uniform(0, 100)]
             }
             await utils.process_message(db, msg)
-        utils.set_conn_str(conn_str)
         print(await utils.get_latest_trace('junk'))
 
 

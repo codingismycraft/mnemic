@@ -1,5 +1,5 @@
 """Tests the utils module."""
-
+import os
 import random
 import unittest
 import uuid
@@ -33,8 +33,10 @@ class TestUtils(unittest.TestCase):
             "uuid": identifier,
             "column_names": ["v1", 'v2']
         }
-        async with db_conn.DbConnection(conn_str=conn_str) as db:
+        os.environ["POSTGRES_CONN_STR"] = conn_str
+        async with db_conn.DbConnection() as db:
             await utils.process_message(db=db, payload=msg)
+        del os.environ["POSTGRES_CONN_STR"]
 
     @async_testable
     async def test_process_message_invalid_payload(self):
@@ -50,16 +52,18 @@ class TestUtils(unittest.TestCase):
                 "column_names": ["v1", 'v2']
             }
         ]
-        async with db_conn.DbConnection(conn_str=conn_str) as db:
+        os.environ["POSTGRES_CONN_STR"] = conn_str
+        async with db_conn.DbConnection() as db:
             for msg in invalid_msgs:
                 with self.assertRaises(exceptions.InvalidMessage):
                     await utils.process_message(db=db, payload=msg)
+        del os.environ["POSTGRES_CONN_STR"]
 
     @async_testable
     async def test_accessors(self):
         """Tests the accessor functions."""
         conn_str = await common.recreate_db(self.DB_NAME)
-        utils.set_conn_str(conn_str)
+        os.environ["POSTGRES_CONN_STR"] = conn_str
         identifier = str(uuid.uuid4())
         app_name = 'testing_app'
         msg = {
@@ -80,8 +84,7 @@ class TestUtils(unittest.TestCase):
         ]
 
         self.assertEqual(len(rows), N)
-
-        async with db_conn.DbConnection(conn_str=conn_str) as db:
+        async with db_conn.DbConnection() as db:
             await utils.process_message(db=db, payload=msg)
             for row in rows:
                 await utils.process_message(db=db, payload=row)
@@ -107,7 +110,7 @@ class TestUtils(unittest.TestCase):
 
         self.assertIsInstance(latest_trace, str)
 
-        traces = await utils.get_all_tracers()
+        del os.environ["POSTGRES_CONN_STR"]
 
 
 if __name__ == '__main__':

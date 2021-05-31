@@ -33,7 +33,7 @@ async def main():
     async with tc.MemoryDiagnostics() as mem_diag, tc.PostgresDiagnostics(
             conn_str=_CONN_STR) as db_diag:
         await tc.start_tracer(
-            "func-profiler", 1, host, port,
+            "new-testing-123", 1, host, port,
             mem_diag.mem_allocation,
             tc.active_tasks
         )

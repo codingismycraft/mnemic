@@ -7,3 +7,7 @@ class DolonException(Exception):
 
 class InvalidMessage(DolonException):
     """Invalid message."""
+
+
+class InvalidEnvironmentVariable(DolonException):
+    """Invalid environment variable."""

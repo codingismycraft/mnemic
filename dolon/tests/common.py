@@ -45,16 +45,18 @@ async def recreate_db(db_name):
     with open(sql_schema_file) as f:
         sql_schema_script = f.read()
 
-    async with db_conn.DbConnection(conn_str=conn_str) as db:
+    db_conn.DbConnection.set_conn_str(conn_str)
+    async with db_conn.DbConnection() as db:
         conn_pool = db.get_conn_pool()
         async with conn_pool.acquire() as conn:
             await conn.execute(_SQL_DROP_DB(db_name=db_name))
             await conn.execute(_SQL_CREATE_DB(db_name=db_name))
 
     conn_str = get_conn_str(db_name)
-    async with db_conn.DbConnection(conn_str=conn_str) as db:
+    db_conn.DbConnection.set_conn_str(conn_str)
+    async with db_conn.DbConnection() as db:
         conn_pool = db.get_conn_pool()
         async with conn_pool.acquire() as conn:
             await conn.execute(sql_schema_script)
-
+    db_conn.DbConnection.set_conn_str(None)
     return conn_str

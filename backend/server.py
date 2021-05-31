@@ -1,6 +1,7 @@
 """The listening UDP server for tracing messages."""
 
 import asyncio
+import os
 import signal
 
 import logging
@@ -10,6 +11,7 @@ import dolon.db_conn as db_conn
 
 logging.basicConfig(level=logging.DEBUG)
 
+server_port = int(os.environ["BACK_END_PORT"])
 
 class CustomMsgProtocol(asyncio.BaseProtocol):
     _db = None
@@ -24,15 +26,12 @@ class CustomMsgProtocol(asyncio.BaseProtocol):
             utils.process_message(db=self._db, payload=message)
         )
 
-
 async def run():
-    conn_str = f'postgresql://postgres:postgres123@localhost:5432/mnemic'
-    utils.set_conn_str(conn_str)
     stop_event = asyncio.Event()
     loop = asyncio.get_event_loop()
     await loop.create_datagram_endpoint(
         CustomMsgProtocol,
-        local_addr=('0.0.0.0', 12012)
+        local_addr=('0.0.0.0', server_port)
     )
 
     async def terminate():
@@ -48,7 +47,7 @@ async def run():
             )
         )
     logging.info("Starting UDP server")
-    async with db_conn.DbConnection(conn_str=conn_str) as db:
+    async with db_conn.DbConnection() as db:
         CustomMsgProtocol.set_db(db)
         await stop_event.wait()
 
