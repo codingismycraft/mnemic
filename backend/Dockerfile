@@ -1,6 +1,6 @@
 FROM python:latest
 WORKDIR /backend
 RUN pip3 install asyncpg
-RUN pip3 install dolon==0.0.40
+RUN pip3 install dolon==0.0.41
 COPY server.py server.py
 CMD ["python", "server.py"]

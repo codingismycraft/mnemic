@@ -3,6 +3,9 @@
 import asyncio
 import random
 
+import tracemalloc
+tracemalloc.start()
+
 import dolon.trace_client as tc
 import dolon.profiler as profiler
 
@@ -27,14 +30,18 @@ async def backend_process():
 
 
 async def main():
+    tracer_name = "removes-mem-alloc-context-mgr"
+    frequency = 1
     host = "127.0.0.1"
     port = 12012
 
-    async with tc.MemoryDiagnostics() as mem_diag, tc.PostgresDiagnostics(
-            conn_str=_CONN_STR) as db_diag:
+    async with tc.PostgresDiagnostics(conn_str=_CONN_STR) as db_diag:
         await tc.start_tracer(
-            "new-testing-123", 1, host, port,
-            mem_diag.mem_allocation,
+            tracer_name,
+            frequency,
+            host,
+            port,
+            tc.mem_allocation,
             tc.active_tasks
         )
 

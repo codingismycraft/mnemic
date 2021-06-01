@@ -66,22 +66,13 @@ class PostgresDiagnostics(db_conn_impl.DbConnectionImpl):
         return await db_stats.conn_count_in_db.get_value(self)
 
 
-class MemoryDiagnostics:
-    """Wraps memory diagnostics within an async context manager."""
+async def mem_allocation():
+    """Returns the size of the allocated memory in Mb.
 
-    async def __aenter__(self):
-        """Enters the context."""
-        tracemalloc.start()
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Exits from the context."""
-        tracemalloc.stop()
-
-    async def mem_allocation(self):
-        """Returns the size of the allocated memory in Mb."""
-        current, peak = tracemalloc.get_traced_memory()
-        return current / 10 ** 6
+    Assumes that the client code has already called tracemalloc.start().
+    """
+    current, peak = tracemalloc.get_traced_memory()
+    return current / 10 ** 6
 
 
 async def active_tasks():
