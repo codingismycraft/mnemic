@@ -1,4 +1,4 @@
-"""Uploads all the images to docker."
+# Uploads all the images to docker.
 
 cd ../db
 docker build -t jpazarzis/mnemic-db .
