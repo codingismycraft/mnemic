@@ -2,7 +2,5 @@ version: 2
 
 python:
   install:
-    - method: pip
-      path: .
     - method: setuptools
-      path: dolon
+      path: .
