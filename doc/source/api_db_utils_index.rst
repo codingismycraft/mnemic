@@ -4,19 +4,15 @@
 DB API Reference
 ================
 
-.. module:: dolon.utils
+.. autofunction:: dolon.utils.process_message
 
-.. currentmodule:: dolon.utils
+.. autofunction:: dolon.utils.get_trace
 
-.. autofunction:: process_message
+.. autofunction:: dolon.utils.get_all_tracers
 
-.. autofunction:: get_trace
+.. autofunction:: dolon.utils.get_trace_as_json
 
-.. autofunction:: get_all_tracers
+.. autofunction:: dolon.utils.get_trace_run_info
 
-.. autofunction:: get_trace_as_json
-
-.. autofunction:: get_trace_run_info
-
-.. autofunction:: get_latest_trace
+.. autofunction:: dolon.utils.get_latest_trace
 
