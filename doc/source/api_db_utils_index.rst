@@ -4,10 +4,10 @@
 DB API Reference
 ================
 
-.. module:: dolon
+.. module:: dolon.utils
     :synopsis: dolon
 
-.. currentmodule:: dolon
+.. currentmodule:: dolon.utils
 
 .. autofunction:: dolon.utils.process_message
 
