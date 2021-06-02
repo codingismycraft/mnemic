@@ -11,6 +11,7 @@ version_file = os.path.join(os.path.dirname(os.path.dirname(__file__)),
 
 sys.path.append(os.path.abspath('../..'))
 sys.path.append(os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('..'))
 
 
 with open(version_file, 'r') as f:
