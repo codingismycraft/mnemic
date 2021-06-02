@@ -1,6 +1,8 @@
 # mnemic
 A memory tracer application
 
+See here documentation: https://github.com/codingismycraft/mnemic/wiki/Mnemic
+
 ## Start the Service
 
 To start the service you need to have the following services running:
