@@ -4,6 +4,9 @@
 DB API Reference
 ================
 
+.. module:: asyncpg
+
+
 .. currentmodule:: dolon
 
 
