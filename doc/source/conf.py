@@ -28,7 +28,10 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.autodoc'
 ]
+
+
 
 add_module_names = False
 
