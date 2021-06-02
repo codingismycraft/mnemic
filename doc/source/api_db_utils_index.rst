@@ -4,6 +4,11 @@
 DB API Reference
 ================
 
+.. module:: dolon
+    :synopsis: dolon
+
+.. currentmodule:: dolon
+
 .. autofunction:: dolon.utils.process_message
 
 .. autofunction:: dolon.utils.get_trace
