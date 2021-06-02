@@ -4,23 +4,19 @@
 DB API Reference
 ================
 
-.. module:: asyncpg
+.. module:: dolon.utils
 
+.. currentmodule:: dolon.utils
 
-.. currentmodule:: dolon
+.. autofunction:: process_message
 
+.. autofunction:: get_trace
 
-.. autofunction:: dolon.utils.process_message
+.. autofunction:: get_all_tracers
 
+.. autofunction:: get_trace_as_json
 
-.. autofunction:: dolon.utils.get_trace
+.. autofunction:: get_trace_run_info
 
-
-.. autofunction:: dolon.utils.get_all_tracers
-
-.. autofunction:: dolon.utils.get_trace_as_json
-
-.. autofunction:: dolon.utils.get_trace_run_info
-
-.. autofunction:: dolon.utils.get_latest_trace
+.. autofunction:: get_latest_trace
 
