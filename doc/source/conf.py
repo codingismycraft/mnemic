@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath('..'))
 version_file = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                            '..', 'dolon', '_version.py')
 
+sys.path.append(os.path.abspath('../..'))
 sys.path.append(os.path.abspath('..'))
 
 
