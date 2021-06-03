@@ -30,19 +30,21 @@ async def backend_process():
 
 
 async def main():
-    tracer_name = "removes-mem-alloc-context-mgr"
+    tracer_name = "uses-postgres-diagnostics"
     frequency = 1
     host = "127.0.0.1"
     port = 12012
 
-    async with tc.PostgresDiagnostics(conn_str=_CONN_STR) as db_diag:
+    async with tc.PostgresDiagnostics(conn_str=_CONN_STR) as db_profiler:
         await tc.start_tracer(
             tracer_name,
             frequency,
             host,
             port,
             tc.mem_allocation,
-            tc.active_tasks
+            db_profiler.idle,
+            db_profiler.count_db_connections,
+            db_profiler.live_msgs
         )
 
 

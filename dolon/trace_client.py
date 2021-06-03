@@ -106,7 +106,7 @@ class PostgresDiagnostics(db_conn_impl.DbConnectionImpl):
         """
         return await db_stats.idle_in_db.get_value(self)
 
-    async def dn_conn(self):
+    async def count_db_connections(self):
         """Returns the number of connections in db.
 
         :returns: The number of connections in db. Can be used as a profiler
