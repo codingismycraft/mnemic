@@ -19,4 +19,5 @@ Contents
    backend
    api_tracing_index
    api_db_utils_index
+   exceptions
    faq
