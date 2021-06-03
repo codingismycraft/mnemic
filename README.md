@@ -4,6 +4,14 @@ Mnemic is about tracing and profiling applications. The current version is focus
 
 The service can be installed from docker and the client (meaning the application to be profiled) can access it using the host name the the port where it is installed and listening.
 
+
+# Documentation
+
+Full documentation for the project can be seen here:
+
+https://mnemic.readthedocs.io/en/latest/index.html
+
+
 # High level view 
 
 The following picture shows the components that are involved in mnemic: 

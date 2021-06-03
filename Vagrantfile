@@ -19,6 +19,8 @@ sudo pip3 install seaborn
 sudo pip3 install --upgrade tensorflow
 sudo pip3 install aiohttp
 sudo pip3 install ipywidgets
+sudo pip3 pip install -U sphinx
+sudo pip3 install sphinx-rtd-theme
 sudo echo 'alias psql="docker exec -it my-db psql -U postgres"' >> /home/vagrant/.bashrc
 sudo echo 'alias dropdb="docker exec -it my-db dropdb -U postgres"' >> /home/vagrant/.bashrc
 sudo echo 'alias createdb="docker exec -it my-db createdb -U postgres"' >> /home/vagrant/.bashrc

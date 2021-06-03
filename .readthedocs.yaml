@@ -1,0 +1,8 @@
+version: 2
+
+
+# Explicitly set the version of Python and its requirements
+python:
+  version: 3.6
+  install:
+    - requirements: doc/requirements.txt
