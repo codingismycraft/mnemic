@@ -7,7 +7,7 @@ The service can be installed from docker and the client (meaning the application
 
 # Documentation
 
-Full documentation for the project can be seen [here](https://mnemic.readthedocs.io/en/main/).
+Full documentation for the project can be seen [here](https://mnemic.readthedocs.io/en/main/index.html).
 
 # High level view 
 
