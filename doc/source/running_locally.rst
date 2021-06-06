@@ -31,7 +31,9 @@ holds the tracing runs:
 
 .. code-block:: bash
 
-    psql mnemic
+    docker exec -it mnemic-db bash
+    psql -U postgres mnemic
+
     mnemic=# \dt+
                                   List of relations
      Schema |    Name     | Type  |  Owner   | Persistence | Size  | Description
