@@ -74,6 +74,11 @@ def web_handler(handler_func):
 
 
 def make_image_file():
+    """Creates a filename that will be used for an image.
+
+    :return: A filename that will be used for an image.
+    :rtype: str.
+    """
     image_prefix = str(uuid.uuid4())
     filename = f'{image_prefix}_figure.png'
     return filename
@@ -85,6 +90,17 @@ def make_correlation_heat_map(
         linewidths=0,
         figsize=(9, 6),
         annot=False):
+    """Creates a correlation heat map.
+
+    :param pandas.DataFrame data: The data to create correlations for.
+    :param str title: The title for the correlation image.
+    :param int linewidths: The line width for the heat map.
+    :param tuple figsize: The figsize as a 2 dimension tuple (in inches).
+    :param bool annot: If true the correlation value will be displayed.
+
+    return: The filename of the image and the image itself.
+    rtype: tuple.
+    """
     cmap = sns.diverging_palette(14, 120, as_cmap=True)
     data = data.dropna()
     corr = data.corr()
@@ -225,6 +241,7 @@ class Handler:
 
 
 def run():
+    """Runs the backend service."""
     app = web.Application()
     handler = Handler()
     app.add_routes(

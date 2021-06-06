@@ -14,19 +14,34 @@ logging.basicConfig(level=logging.DEBUG)
 server_port = int(os.environ["BACK_END_PORT"])
 
 class CustomMsgProtocol(asyncio.BaseProtocol):
+    """Override the base protocall.
+
+    :cvar db: Hold the database connection that will be shared accros all
+        requests.
+    """
     _db = None
 
     @classmethod
     def set_db(cls, db):
+        """Sets the database connection.
+
+        :param db: The database connection.
+        """
         cls._db = db
 
     def datagram_received(self, data, addr):
+        """Called when a new UDP request is received.
+
+        :param data: The data received from the server.
+        :param addr: Unused.
+        """
         message = data.decode()
         asyncio.ensure_future(
             utils.process_message(db=self._db, payload=message)
         )
 
 async def run():
+    """Runs the server."""
     stop_event = asyncio.Event()
     loop = asyncio.get_event_loop()
     await loop.create_datagram_endpoint(
@@ -35,6 +50,7 @@ async def run():
     )
 
     async def terminate():
+        """Called upon termination."""
         stop_event.set()
         await asyncio.sleep(2)
 
