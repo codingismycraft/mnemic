@@ -134,6 +134,8 @@ class Handler:
                 'started': start-time
                 'duration': duration-time
             }
+
+        :param request: The web request.
         """
         uuid_for_run = request.rel_url.query['uuid']
         data = await utils.get_trace_run_info(uuid_for_run)
@@ -156,6 +158,8 @@ class Handler:
                   ]
                }
             ]
+
+        :param request: The web request.
         """
         data = await utils.get_all_tracers()
         return web.json_response(data)
@@ -165,6 +169,8 @@ class Handler:
         """Returns all the rows for the passed in run.
 
         Expects the uuid of the tracer run to be passed as a query parameter.
+
+        :param request: The web request.
         """
         uuid_for_run = request.rel_url.query['uuid']
         data = await utils.get_trace(uuid_for_run)
@@ -231,7 +237,10 @@ class Handler:
 
     @web_handler
     async def main_page_handler(self, request):
-        """Displays the main page."""
+        """Displays the main page.
+
+        :param request: The web request.
+        """
         template = _JINJA_ENV.get_template('index.html')
         txt = template.render()
         return web.Response(
