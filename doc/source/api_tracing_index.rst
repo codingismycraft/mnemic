@@ -73,6 +73,7 @@ list.
             frequency,
             host,
             port,
+            True,
             tc.mem_allocation,
             tc.active_tasks,
             tc.cpu_percent
@@ -122,6 +123,7 @@ Example using PostgresDiagnostics
                 frequency,
                 host,
                 port,
+                True,
                 tc.mem_allocation,
                 tc.active_tasks,
                 tc.cpu_percent,
@@ -202,6 +204,7 @@ An example of profiling a function can be seen here:
             frequency,
             host,
             port,
+            True,
             tc.mem_allocation,
             tc.active_tasks,
             tc.cpu_percent

@@ -6,12 +6,13 @@ import uuid
 
 class TraceClientImpl:
 
-    def __init__(self, app_name, host, port, *diagnostics):
+    def __init__(self, app_name, host, port, verbose, *diagnostics):
         self._app_name = app_name
         self._host = host
         self._port = port
         self._diagnostics = list(diagnostics)
         self._socket = None
+        self._verbose = verbose
 
     def _send(self, data):
         assert self._socket
@@ -29,7 +30,8 @@ class TraceClientImpl:
                     await diagnostic() for diagnostic in self._diagnostics
                 ]
             }
-            print("Sending:", msg)
+            if self._verbose:
+                print("Sending:", msg)
             self._send(msg)
 
 

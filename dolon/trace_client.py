@@ -15,7 +15,7 @@ import dolon.impl.trace_client_impl as trace_client_impl
 _logger = logging.getLogger(__name__)
 
 
-async def start_tracer(app_name, frequency, host, port, *diagnostics):
+async def start_tracer(app_name, frequency, host, port, verbose, *diagnostics):
     """Starts a tracer.
 
     This is where a tracer is created and starts running in the background. It
@@ -40,6 +40,8 @@ async def start_tracer(app_name, frequency, host, port, *diagnostics):
 
     :param int port: The port that is listening for messages.
 
+    :param bool verbose: True to print a message every time a msg is produced.
+
     :param diagnostics: The diagnostic callable to record. There is no limit
         in the number of diagnostic function to pass and they can differ from
         run to run for the same tracer name. The name of the callable will be
@@ -51,6 +53,7 @@ async def start_tracer(app_name, frequency, host, port, *diagnostics):
             app_name,
             host,
             port,
+            verbose,
             *diagnostics
         )
         async with tc:

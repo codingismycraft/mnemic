@@ -34,6 +34,7 @@ async def main():
     frequency = 1
     host = "127.0.0.1"
     port = 12012
+    verbose = False
 
     async with tc.PostgresDiagnostics(conn_str=_CONN_STR) as db_profiler:
         await tc.start_tracer(
@@ -41,6 +42,7 @@ async def main():
             frequency,
             host,
             port,
+            verbose,
             tc.mem_allocation,
             db_profiler.idle,
             db_profiler.count_db_connections,
