@@ -20,10 +20,11 @@ setup(
     name="dolon",
     description="A performance tracer application.",
     long_description=readme,
-    version='0.0.45',
+    version='0.0.46',
     packages=find_packages(),
     install_requires=[
         "asyncpg",
+        "aiohttp"
         "psutil"
     ],
 )
