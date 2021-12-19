@@ -174,3 +174,55 @@ async def memory_use():
     pid = os.getpid()
     py = psutil.Process(pid)
     return py.memory_info()[0] / 2. ** 30
+
+
+async def rabbitmq_connections():
+    """Returns the number of active rabbitmq connections.
+
+    Use the RMQ_SERVER environment variable to customize the RMQ server.
+    Use the MIN_RMQ_UPDATE_INTERVAL variable to customize the update timespan.
+
+    :returns: The number of active rabbitmq connections.
+
+    :rtype: int.
+    """
+    return await trace_client_impl.RabbitmqStats.rabbitmq_connections()
+
+
+async def rabbitmq_channels():
+    """Returns the number of active rabbitmq channels.
+
+    Use the RMQ_SERVER environment variable to customize the RMQ server.
+    Use the MIN_RMQ_UPDATE_INTERVAL variable to customize the update timespan.
+
+    :returns: The number of active rabbitmq channels.
+
+    :rtype: int.
+    """
+    return await trace_client_impl.RabbitmqStats.rabbitmq_channels()
+
+
+async def rabbitmq_queues():
+    """Returns the number of rabbitmq queues.
+
+    Use the RMQ_SERVER environment variable to customize the RMQ server.
+    Use the MIN_RMQ_UPDATE_INTERVAL variable to customize the update timespan.
+
+    :returns: The number of rabbitmq queues.
+
+    :rtype: int.
+    """
+    return await trace_client_impl.RabbitmqStats.rabbitmq_queues()
+
+
+async def rabbitmq_bindings():
+    """Returns the number of rabbitmq bindings.
+
+    Use the RMQ_SERVER environment variable to customize the RMQ server.
+    Use the MIN_RMQ_UPDATE_INTERVAL variable to customize the update timespan.
+
+    :returns: The number of rabbitmq bindings.
+
+    :rtype: int.
+    """
+    return await trace_client_impl.RabbitmqStats.rabbitmq_bindings()
