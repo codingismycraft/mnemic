@@ -20,7 +20,7 @@ setup(
     name="dolon",
     description="A performance tracer application.",
     long_description=readme,
-    version='0.0.46',
+    version='0.0.47',
     packages=find_packages(),
     install_requires=[
         "asyncpg",
