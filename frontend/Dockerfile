@@ -1,5 +1,5 @@
 FROM jupyter/tensorflow-notebook
 RUN pip3 install asyncpg
-RUN pip3 install dolon==0.1.2
+RUN pip3 install dolon==0.1.3
 COPY . .
 CMD ["python3", "server.py"]

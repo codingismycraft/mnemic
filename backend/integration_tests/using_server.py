@@ -4,6 +4,7 @@ import asyncio
 import random
 
 import tracemalloc
+
 tracemalloc.start()
 
 import dolon.trace_client as tc
@@ -23,18 +24,26 @@ async def goo():
 
 
 async def backend_process():
+    junk = Junk()
     while True:
         asyncio.ensure_future(foo())
         asyncio.ensure_future(goo())
         await asyncio.sleep(0.1)
+        await junk.junk()
+
+
+class Junk:
+    @profiler.profiler
+    async def junk(self):
+        await asyncio.sleep(random.uniform(0.01, 0.2))
 
 
 async def main():
-    tracer_name = "uses-postgres-diagnostics"
+    tracer_name = "junktest-11"
     frequency = 1
     host = "127.0.0.1"
     port = 12012
-    verbose = False
+    verbose = True
 
     async with tc.PostgresDiagnostics(conn_str=_CONN_STR) as db_profiler:
         await tc.start_tracer(

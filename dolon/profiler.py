@@ -75,6 +75,10 @@ def get_profiling_functions(use_async=False):
 
     func = []
     for name in _ProfilingStatCollection.get_profiling_callable_names():
+
+        while '.' in name:
+            name = name.replace('.', '_')
+
         func.append(make_func(
             profiling_callable_name=name, profile_func=_get_hits, tag='hits')
         )
@@ -218,14 +222,24 @@ class _ProfilingStatCollection:
 
     @classmethod
     def register_profiling_function(cls, func):
-        cls._stats[func.__qualname__] = _ProfilingStats()
+        name = func.__qualname__
+
+        while '.' in name:
+            name = name.replace('.', '_')
+
+        cls._stats[name] = _ProfilingStats()
 
     def __init__(self, func):
         """Initializer.
 
         :param callable func: The callable to profile.
         """
-        self._func_name = func.__qualname__
+        name = func.__qualname__
+
+        while '.' in name:
+            name = name.replace('.', '_')
+
+        self._func_name = name
         self._uuid = None
 
     def __enter__(self):
