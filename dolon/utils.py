@@ -74,6 +74,17 @@ async def get_trace_run_info(uuid):
     return await utils_impl.get_trace_run_info(uuid)
 
 
+async def get_trace_run_name(uuid):
+    """Returns the name of the trace run for the passed in uuid.
+
+    :param str uuid: The identifier for the trace run.
+
+    :returns: The name of the trace run.
+    :rtype: str.
+    """
+    return await utils_impl.get_trace_run_name(uuid)
+
+
 async def get_latest_trace(app_name):
     """Returns the latest trace for the passed in app_name.
 

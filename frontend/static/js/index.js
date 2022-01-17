@@ -56,26 +56,79 @@ function load_tracer_tree_view() {
         })
 }
 
+
+function drawChart(title, data) {
+    const options = {
+        title: title,
+        legend: 'none',
+        colors: ['#070794', '#e6693e', '#ec8f6e', '#f3b49f', '#f6c7b6'],
+        backgroundColor: '#caece8',
+        is3D: true
+
+    };
+    const div = document.createElement('div');
+    div.setAttribute("class", "trace_chart");
+    document.getElementById('right').appendChild(div);
+    const chart = new google.visualization.LineChart(div);
+    chart.draw(google.visualization.arrayToDataTable(data), options);
+}
+
+function download_csv(uuid) {
+    // Downloads the tracing data for the passed in run.
+
+    // http://localhost:6900/get_csv_name?uuid=1e7c356f-16b3-485c-a4f0-06872919285e
+
+    $.get("get_csv_name?uuid=" + uuid, function (data) {
+        const uri = "tracing_data_handler_as_csv?uuid=" + uuid;
+        const link = document.createElement("a");
+        link.download = data.csv_name;
+        link.href = uri;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }).error(function () {
+        $('body').removeClass('waiting');
+        alert("500 Error..");
+    });
+
+
+
+
+}
+
 function load_run_info(uuid) {
     $('body').addClass('waiting');
 
-    $.get("tracer_run?uuid=" + uuid, function (data) {
-        $("#right").empty()
-        $("#right").append(data)
+    $.get("tracing_data_handler?uuid=" + uuid, function (data) {
+        $("#right").empty();
+
+        for (const property in data) {
+            drawChart(property, data[property])
+        }
+
         $('body').removeClass('waiting');
-    })
-    .error(function () {
+    }).error(function () {
             $('body').removeClass('waiting');
             alert("500 Error..");
         });
 
     $.get("trace_run_info?uuid=" + uuid, function (data) {
         var txt = '<label>Started</label> <value>' + data['started'] + '</value><label>Count</label><value>'
-            + data['counter'] + '</value><label>Duration</label><value>' + data['duration'] +'</value>';
+            + data['counter'] + '</value><label>Duration</label><value>' + data['duration'] + '</value>';
         $("#tracer_run_name").html(data['app_name']);
+
+        // Add the csv download button.
+        txt += "<button id = 'download_csv_btn' style='margin-left:102px;'" +
+            " >Download csv</button>";
+
         $("#tracer_description").html(txt);
-    }).error(function () {
-            $('body').removeClass('waiting');
-            alert("500 Error..");
+
+        // In download button add the click event.
+        $("#download_csv_btn").on("click", function () {
+            download_csv(uuid);
         });
+    }).error(function () {
+        $('body').removeClass('waiting');
+        alert("500 Error..");
+    });
 }

@@ -7,7 +7,12 @@
     <script src="http://code.jquery.com/jquery-latest.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="/static/js/index.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script type="text/javascript"
+            src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script type="text/javascript">
+        google.charts.load('current', {'packages': ['corechart', 'line']});
+    </script>
 </head>
 <body onload="load_tracer_tree_view()">
 {% block content %}

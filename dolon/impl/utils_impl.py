@@ -1,5 +1,5 @@
 """Implementation details to interact with the serialization means."""
-
+import asyncio
 import datetime
 import json
 import math
@@ -95,7 +95,10 @@ async def get_trace_as_json(uuid):
 
     trace_as_json = {}
     for field_name, values in zip(field_names, columns):
-        trace_as_json[field_name] = values
+        if field_name != 'time':
+            value_pairs = [["Time", field_name]] + \
+                          [[i, v] for i, v in enumerate(values)]
+            trace_as_json[field_name] = value_pairs
 
     return trace_as_json
 
@@ -199,6 +202,27 @@ async def _insert_row(db, uuid, *row_data):
     conn_pool = db.get_conn_pool()
     async with conn_pool.acquire() as conn:
         await conn.execute(constants.SQL_INSERT_ROW, uuid, list(row_data))
+
+
+async def get_trace_run_name(uuid):
+    """Returns the name of the trace run for the passed in uuid.
+
+    :param str uuid: The identifier for the trace run.
+
+    :returns: The name of the trace run.
+    :rtype: str.
+    """
+    sql = f" select app_name, creation_time from " \
+          f"tracing_run where uuid='{uuid}';"
+
+    async with DbConnection() as db:
+        async for value in db.execute_query(sql):
+            app_name = str(value["app_name"])
+            creation_time = value["creation_time"]
+            app_name = app_name.replace(" ", "")
+            t = creation_time.strftime('%Y-%m-%d-%H:%M:%S.%f')[:-7]
+            csv_filename = f"{app_name}-{t}.csv"
+            return csv_filename
 
 
 async def _get_trace(uuid, db):
@@ -327,3 +351,14 @@ def _format_datetime(date_to_format):
         return date_to_format.strftime("%a, %b %d, %H:%M")
     else:
         return date_to_format.strftime("%a, %b %d %Y, %H:%M")
+
+
+if __name__ == '__main__':
+    import os
+    _CONN_STR = f'postgresql://postgres:postgres123@localhost:5432/mnemic'
+    os.environ["POSTGRES_CONN_STR"] = _CONN_STR
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(get_trace_run_name('1e7c356f-16b3-485c-a4f0-06872919285e'))
+
+

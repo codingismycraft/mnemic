@@ -57,6 +57,38 @@ async def clear_images():
                 except Exception as ex:
                     logger.exception(ex)
 
+def flatten_lists_to_csv(data):
+    """Converts the passed in data to csv.
+
+    Assuming:
+        x = [
+            ["v1", 98, 23],
+            ["v2", 0.25, 0.56],
+        ]
+    then flatten_lists_to_csv(data) will return the following string:
+
+    v1,v2
+    98,0.25
+    23,0.56
+
+    :param list data: A list of lists holding a flat view of the data
+    to convert to csv.
+
+    :return: A string representing the csv view of the passed in data.
+    """
+    rows = []
+    i = 0
+    while True:
+        try:
+            row = []
+            for j in range(len(data)):
+                row.append(str(data[j][i]))
+            rows.append(",".join(row))
+            i += 1
+        except IndexError:
+            break
+    return "\n".join(rows)
+
 
 def web_handler(handler_func):
     """Wraps a handler function adding standard processing."""
@@ -165,6 +197,48 @@ class Handler:
         return web.json_response(data)
 
     @web_handler
+    async def tracing_data_handler(self, request):
+        """Returns all the data for the passed in uuid for the run.
+
+        Expects the uuid of the tracer run to be passed as a query parameter.
+
+        :param request: The web request which holds the uuid.
+        """
+        uuid_for_run = request.rel_url.query['uuid']
+        x = await utils.get_trace_as_json(uuid_for_run)
+        return web.json_response(x)
+
+    async def get_csv_name(self, request):
+        uuid = request.rel_url.query['uuid']
+        name = await utils.get_trace_run_name(uuid)
+        return web.json_response({"csv_name": name})
+
+    @web_handler
+    async def tracing_data_handler_as_csv(self, request):
+        """Returns all the data for the passed in uuid for the run as csv.
+
+        Expects the uuid of the tracer run to be passed as a query parameter.
+
+        :param request: The web request which holds the uuid.
+        """
+        uuid_for_run = request.rel_url.query['uuid']
+        x = await utils.get_trace_as_json(uuid_for_run)
+
+        # Convert the json data to a flat csv format.
+        y = []
+        for key in list(x.keys()):
+            d = [key]
+            for _, v in x[key][1:]:
+                d.append(v)
+            y.append(d)
+        txt = flatten_lists_to_csv(y)
+
+        return web.Response(
+            body=txt.encode(),
+            content_type='text/html'
+        )
+
+    @web_handler
     async def tracer_run_handler(self, request):
         """Returns all the rows for the passed in run.
 
@@ -258,7 +332,11 @@ def run():
             web.get('/', handler.main_page_handler),
             web.get('/tracers', handler.tracers_handler),
             web.get('/tracer_run', handler.tracer_run_handler),
-            web.get('/trace_run_info', handler.trace_run_info_handler)
+            web.get('/trace_run_info', handler.trace_run_info_handler),
+            web.get('/tracing_data_handler', handler.tracing_data_handler),
+            web.get('/tracing_data_handler_as_csv',
+                    handler.tracing_data_handler_as_csv),
+            web.get('/get_csv_name', handler.get_csv_name),
         ]
     )
     asyncio.ensure_future(clear_images())
