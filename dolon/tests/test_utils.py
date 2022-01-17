@@ -59,59 +59,6 @@ class TestUtils(unittest.TestCase):
                     await utils.process_message(db=db, payload=msg)
         del os.environ["POSTGRES_CONN_STR"]
 
-    @async_testable
-    async def test_accessors(self):
-        """Tests the accessor functions."""
-        conn_str = await common.recreate_db(self.DB_NAME)
-        os.environ["POSTGRES_CONN_STR"] = conn_str
-        identifier = str(uuid.uuid4())
-        app_name = 'testing_app'
-        msg = {
-            "msg_type": "create_trace_run",
-            "app_name": app_name,
-            "uuid": identifier,
-            "column_names": ["v1", 'v2']
-        }
-
-        N = 10
-        rows = [
-            {
-                "msg_type": "row",
-                "uuid": identifier,
-                "row_data": [random.uniform(0, 100), random.uniform(0, 100)]
-            }
-            for _ in range(N)
-        ]
-
-        self.assertEqual(len(rows), N)
-        async with db_conn.DbConnection() as db:
-            await utils.process_message(db=db, payload=msg)
-            for row in rows:
-                await utils.process_message(db=db, payload=row)
-
-        msgs = await utils.get_trace_as_json(uuid=identifier)
-
-        self.assertIn('time', msgs)
-        self.assertIn('v1', msgs)
-        self.assertIn('v2', msgs)
-
-        self.assertEqual(len(msgs['time']), N)
-        self.assertEqual(len(msgs['v1']), N)
-        self.assertEqual(len(msgs['v2']), N)
-
-        run_info = await utils.get_trace_run_info(identifier)
-
-        self.assertIn('app_name', run_info)
-        self.assertIn('counter', run_info)
-        self.assertIn('started', run_info)
-        self.assertIn('duration', run_info)
-
-        latest_trace = await utils.get_latest_trace(app_name)
-
-        self.assertIsInstance(latest_trace, str)
-
-        del os.environ["POSTGRES_CONN_STR"]
-
 
 if __name__ == '__main__':
     unittest.main()
