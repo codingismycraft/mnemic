@@ -42,35 +42,6 @@ front end as a web page.  The easiest way to install it is using docker.
         docker run --name mnemic-back-end --add-host host.docker.internal:host-gateway -p 12013:12013/udp  -e POSTGRES_CONN_STR='postgresql://postgres:postgres123@172.17.0.1:15432/mnemic' -e BACK_END_PORT='12013'  -d jpazarzis/mnemic-backend
         docker run --name mnemic-front-end -e POSTGRES_CONN_STR='postgresql://postgres:postgres123@172.17.0.1:15432/mnemic'  -e FRONT_END_PORT='12111' -p 12111:12111  -d jpazarzis/mnemic-front-end
 
-To run mnemic using docker-compose:
-
-Note: by default, docker-compose will use `docker-compose.yml` located in the directory where it is executed from. To specify an alternate compose file, use: `-f, --file FILE`
-
-
-sudo docker-compose up -d
-
-this will start Mnemic Backend and Frontend containers in the background.
-
-before running it make sure `POSTGRES_CONN_STR` var is exported as it is used to connect to RDS DB:
-
-
-Verify that containers are running:
-
-sudo docker-compose ps
-
-docker-compose ps
-      Name                    Command              State                      Ports                    
--------------------------------------------------------------------------------------------------------
-mnemic_backend_1    python server.py               Up      0.0.0.0:12013->12013/udp,:::12013->12013/udp
-mnemic_frontend_1   tini -g -- python3 server.py   Up      0.0.0.0:80->80/tcp,:::80->80/tcp, 8888/tcp  
-
-
-
-To restart or shutdown the containers run:
-
-sudo docker-compose restart
-
-sudo docker-compose stop
 
 High level View
 ---------------
