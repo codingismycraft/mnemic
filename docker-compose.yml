@@ -1,17 +1,23 @@
-version: '3.3'
+version: '3.4'
 
 services:
-  database:
-    build: ./db
-    ports:
-      - 5432:5432
-    image: jpazarzis/mnemic-db
+  # Using RDS instead. Make sure to export POSTGRES_CONN_STR var before running it.
+  # database: 
+  #   build: ./db
+  #   ports:
+  #     - 5432:5432
+  #   image: jpazarzis/mnemic-db
   backend:
-    build: ./backend
+    image: jpazarzis/mnemic-backend:latest
     ports:
-      - "9999:9999/udp"
-    depends_on:
-      - database
+      - "12013:12013/udp"
     environment:
-      - HOST=database
-    image: jpazarzis/mnemic-backend
+      - POSTGRES_CONN_STR=${POSTGRES_CONN_STR}
+      - BACK_END_PORT=12013
+  frontend:
+    image: jpazarzis/mnemic-front-end:latest
+    ports:
+      - "80:80/tcp"
+    environment:
+      - POSTGRES_CONN_STR=${POSTGRES_CONN_STR}
+      - FRONT_END_PORT=80
