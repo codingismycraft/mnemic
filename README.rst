@@ -46,16 +46,16 @@ To run mnemic using docker-compose:
 
 Note: by default, docker-compose will use `docker-compose.yml` located in the directory where it is executed from. To specify an alternate compose file, use: `-f, --file FILE`
 
-```shell
+
 sudo docker-compose up -d
-```
+
 this will start Mnemic Backend and Frontend containers in the background.
 
 before running it make sure `POSTGRES_CONN_STR` var is exported as it is used to connect to RDS DB:
-```shell
+
 
 Verify that containers are running:
-```shell
+
 sudo docker-compose ps
 
 docker-compose ps
@@ -64,15 +64,13 @@ docker-compose ps
 mnemic_backend_1    python server.py               Up      0.0.0.0:12013->12013/udp,:::12013->12013/udp
 mnemic_frontend_1   tini -g -- python3 server.py   Up      0.0.0.0:80->80/tcp,:::80->80/tcp, 8888/tcp  
 
-```shell
+
 
 To restart or shutdown the containers run:
-```shell
+
 sudo docker-compose restart
-```
-```shell
+
 sudo docker-compose stop
-```
 
 High level View
 ---------------
